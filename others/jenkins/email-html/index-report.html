@@ -19,8 +19,8 @@
             <ul>
                 <li>项目名称: ${PROJECT_NAME}</li>
                 <li>构建编号: ${BUILD_NUMBER}</li>
-                <li>代码路径: ${ENV, var="GIT_URL"}</li>
-                <li>代码分支: ${GIT_BRANCH}</li>
+                <li>GIT路径1 : ${ENV, var="GIT_URL"}:${ENV, var="GIT_BRANCH"}</li>
+                <li>GIT路径2 : ${ENV, var="GIT_URL_1"}:${ENV, var="GIT_BRANCH_1"}</li>
                 <li>触发原因: ${CAUSE}</li>
                 <li>构建状态: ${BUILD_STATUS}</li>
                 <li>项目路径: <a href="${PROJECT_URL}">${PROJECT_URL}</a></li>
@@ -52,6 +52,11 @@
         <td>
             <b><font size="4" color="#0B610B">【测试报告】</font></b>
             <hr size="2" width="100%" align="center" />
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <div>${FILE ,path="/var/lib/jenkins/email-html/${JOB_NAME}/test.html"}</div>
         </td>
     </tr>
     <hr size="2" width="100%" align="center" />
