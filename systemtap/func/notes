@@ -1,0 +1,2 @@
+nm a.out
+objdump -x a.out

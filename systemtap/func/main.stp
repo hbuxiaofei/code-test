@@ -1,0 +1,15 @@
+#!/usr/bin/stap -v
+
+global tm;
+
+probe begin {
+    printf("Begin.\n");
+}
+
+probe process("./a.out").function("func") {
+    tm = gettimeofday_us();
+}
+
+probe process("./a.out").function("func").return {
+    printf("Time:%d us\n", gettimeofday_us() - tm);
+}
