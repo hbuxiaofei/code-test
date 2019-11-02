@@ -8,7 +8,7 @@ TARGET := a.out
 
 CC := gcc
 LD := gcc
-CFLAGS := -O0 -Wall -I${SRC_DIR}
+CFLAGS := -g -Wall -I${SRC_DIR}
 LDFLAGS := -lncurses
 
 ${TARGET}: ${OBJECT}

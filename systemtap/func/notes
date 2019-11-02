@@ -1,2 +1,6 @@
 nm a.out
 objdump -x a.out
+
+stap -L 'process("a.out").function("*")'
+
+

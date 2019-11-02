@@ -1,0 +1,12 @@
+# kernel debuginfo
+cd /boot/ && bunzip2 --keep vmlinux-`uname -r`.bz2
+ln -s /usr/src/kernels/`uname -r` /lib/modules/`uname -r`/build
+
+
+# show stap function
+stap -L 'syscall.*'
+stap -L 'kernel.function("*")'
+stap -L 'kprobe.function("*")'
+stap -L 'module("xfs").function("*")'
+stap -L 'process("/lib64/libc.so.6").function("*")'
+

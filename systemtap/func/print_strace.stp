@@ -1,0 +1,17 @@
+#!/usr/bin/stap -v
+
+
+probe begin {
+    printf("stap start...\n")
+}
+
+
+probe process("a.out").function("func").call {
+    print_ubacktrace()
+}
+
+probe timer.ms(10000) {
+    printf("stap exit...\n" )
+    exit()
+}
+

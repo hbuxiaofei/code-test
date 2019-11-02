@@ -1,0 +1,21 @@
+#!/usr/bin/stap -v
+
+probe begin {
+    printf("stap start...\n")
+}
+
+probe process("./a.out").statement("*@main.c:17")
+{
+    printf("line run...\n");
+}
+
+probe process("./a.out").statement("*@func1.c:8")
+{
+    printf("func1.c:func_test1 run..., count is: %d\n", $count);
+}
+
+probe timer.ms(10000) {
+    printf("stap exit...\n" )
+    exit()
+}
+
