@@ -1,0 +1,15 @@
+#!/usr/bin/stap -v
+
+global tm;
+
+probe begin {
+    printf("Stap Begin.\n");
+}
+
+probe process("/lib64/libpython2.7.so.1.0").function("*") {
+    printf("%s :%d :%s", execname(), pid(), ppfunc())
+}
+
+probe end {
+    printf("Stap End.\n");
+}
