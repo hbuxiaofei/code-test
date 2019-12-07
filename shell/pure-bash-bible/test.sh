@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 source utils.sh
 
@@ -12,6 +12,10 @@ print_test_ok() {
 
 print_test_title() {
     echo "* Test $1"
+}
+
+print_test_ret() {
+    echo "  $1"
 }
 
 # Test util_trim_string
@@ -103,4 +107,43 @@ else
     print_test_ok $test_func
 fi
 
+# Test util_uuid
+test_func="util_uuid"
+print_test_title $test_func
+ret=$($test_func)
+print_test_ret "$ret"
+if [[ $ret == *-*-*-*-* ]]; then
+    print_test_ok $test_func
+else
+    print_test_error $test_func
+fi
 
+# Test util_bar
+test_func="util_bar"
+print_test_title $test_func
+for ((i=0;i<=100;)); do
+    sleep 0.01
+    # Print the bar.
+    util_bar "$i" "20"
+    ((i+=4))
+done
+printf '\n'
+print_test_ok $test_func
+
+
+# Test util_set_check
+test_func="util_set_check"
+print_test_title $test_func
+ret=$($test_func szvmjjwlsa 2>&1)
+if [[ $ret == *not* ]]; then
+    print_test_ret "$ret"
+    print_test_ok $test_func
+else
+    print_test_error $test_func
+fi
+ret=$($test_func test_func 2>&1)
+if [[ $ret == *not* ]]; then
+    print_test_error $test_func
+else
+    print_test_ok $test_func
+fi
