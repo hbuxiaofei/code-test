@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+# https://github.com/rhinstaller/anaconda/pyanaconda/display.py
+# DISPLAY=:1 ./app
+X_DISPLAY_NUMBER=1
+/usr/bin/Xorg -br -logfile /tmp/X.log :$X_DISPLAY_NUMBER vt1 -s 1440 \
+    -ac -nolisten tcp -dpi 96 -noreset
