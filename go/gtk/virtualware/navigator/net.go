@@ -67,7 +67,7 @@ func netSelectionChangedHandler(st *gtk.TreeSelection, ts *gtk.TreeStore) {
 		selectStr, _ := val.GetString()
 
 		// log.Printf("path: %s select: %s \n", tpath, selectStr)
-		activator.ComputeBoxRefresh(ts, tpath, selectStr)
+		activator.NetBoxRefresh(ts, tpath, selectStr)
 	}
 }
 

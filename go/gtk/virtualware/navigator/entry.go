@@ -12,13 +12,17 @@ func notebookChangedHandler(nb *gtk.Notebook, wd *gtk.Widget, page uint) {
 	log.Printf("notebook change, page:%d\n", page)
 	switch page {
 	case 0:
-		activator.ComputeBox.SetVisible(true)
 		activator.StoreBox.SetVisible(false)
+		activator.NetBox.SetVisible(false)
+		activator.ComputeBox.SetVisible(true)
 	case 1:
 		activator.ComputeBox.SetVisible(false)
+		activator.NetBox.SetVisible(false)
 		activator.StoreBox.SetVisible(true)
 	case 2:
-		activator.ComputeBox.SetVisible(true)
+		activator.ComputeBox.SetVisible(false)
+		activator.StoreBox.SetVisible(false)
+		activator.NetBox.SetVisible(true)
 	default:
 		log.Printf("notebook change, page:%d not found\n", page)
 	}

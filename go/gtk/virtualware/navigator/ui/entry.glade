@@ -65,6 +65,7 @@
           <object class="GtkNotebook" id="entry_notebook">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
+            <property name="vexpand">True</property>
             <child>
               <object class="GtkTreeView" id="tv_compute">
                 <property name="visible">True</property>
@@ -136,12 +137,6 @@
             <property name="fill">True</property>
             <property name="position">2</property>
           </packing>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
         </child>
       </object>
     </child>

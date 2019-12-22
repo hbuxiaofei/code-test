@@ -28,12 +28,32 @@ func IsBox(obj glib.IObject) (*gtk.Box, error) {
 	}
 	return nil, errors.New("not a *gtk.Box")
 }
+func IsMenu(obj glib.IObject) (*gtk.Menu, error) {
+	if wd, ok := obj.(*gtk.Menu); ok {
+		return wd, nil
+	}
+	return nil, errors.New("not a *gtk.Menu")
+}
+
+func IsMenuItem(obj glib.IObject) (*gtk.MenuItem, error) {
+	if wd, ok := obj.(*gtk.MenuItem); ok {
+		return wd, nil
+	}
+	return nil, errors.New("not a *gtk.MenuItem")
+}
 
 func IsTreeView(obj glib.IObject) (*gtk.TreeView, error) {
 	if wd, ok := obj.(*gtk.TreeView); ok {
 		return wd, nil
 	}
 	return nil, errors.New("not a *gtk.TreeView")
+}
+
+func IsListStore(obj glib.IObject) (*gtk.ListStore, error) {
+	if wd, ok := obj.(*gtk.ListStore); ok {
+		return wd, nil
+	}
+	return nil, errors.New("not a *gtk.ListStore")
 }
 
 func IsNotebook(obj glib.IObject) (*gtk.Notebook, error) {

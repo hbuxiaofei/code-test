@@ -27,6 +27,9 @@ func Entry() (*gtk.Box, error) {
 	// set parent for store boxes
 	StoreBoxSetParent(box)
 
+	// set parent for net boxes
+	NetBoxSetParent(box)
+
 	win.Remove(box)
 	return box, nil
 }

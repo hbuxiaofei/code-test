@@ -198,7 +198,7 @@ func StoreBoxSetParent(box *gtk.Box) error {
 	// add sub box
 	boxstore, _ := storeGetBox()
 	StoreBox = boxstore
-	boxstore.SetVisible(true)
+	boxstore.SetVisible(false)
 	box.Add(boxstore)
 
 	return nil
