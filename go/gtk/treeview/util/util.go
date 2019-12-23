@@ -48,6 +48,12 @@ func IsTreeView(obj glib.IObject) (*gtk.TreeView, error) {
 	}
 	return nil, errors.New("not a *gtk.TreeView")
 }
+func IsTreeStore(obj glib.IObject) (*gtk.TreeStore, error) {
+	if wd, ok := obj.(*gtk.TreeStore); ok {
+		return wd, nil
+	}
+	return nil, errors.New("not a *gtk.TreeStore")
+}
 
 func IsListStore(obj glib.IObject) (*gtk.ListStore, error) {
 	if wd, ok := obj.(*gtk.ListStore); ok {

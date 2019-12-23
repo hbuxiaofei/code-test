@@ -10,6 +10,12 @@ import (
 	"virtualware/util"
 )
 
+const (
+	COLUMN_1 = iota
+	COLUMN_2
+	COLUMN_3
+)
+
 func StartPrint() {
 	log.Println("run StartPrint...")
 }
@@ -17,6 +23,24 @@ func StartPrint() {
 func onEntryWindowDestroy() {
 	log.Println("on_entry_window_destroy...")
 	gtk.MainQuit()
+}
+
+func addRow(treeStore *gtk.TreeStore, iter *gtk.TreeIter, text1, text2, text3 string) *gtk.TreeIter {
+	i := treeStore.Append(iter)
+
+	err := treeStore.SetValue(i, COLUMN_1, text1)
+	if err != nil {
+		log.Fatal("Unable set value:", err)
+	}
+	err = treeStore.SetValue(i, COLUMN_2, text2)
+	if err != nil {
+		log.Fatal("Unable set value:", err)
+	}
+	err = treeStore.SetValue(i, COLUMN_3, text3)
+	if err != nil {
+		log.Fatal("Unable set value:", err)
+	}
+	return i
 }
 
 func Entry() {
@@ -47,28 +71,14 @@ func Entry() {
 	}
 	builder.ConnectSignals(signals)
 
-	obj, err = builder.GetObject("tv_col1")
+	// getting treestore
+	obj, err = builder.GetObject("treestore1")
 	util.ErrorCheck(err)
-	tvCol1, err := util.IsTreeViewColumn(obj)
+	treeStore, err := util.IsTreeStore(obj)
 	util.ErrorCheck(err)
-	tvCol1.SetTitle("1234")
 
-	obj, err = builder.GetObject("tv_col2")
-	util.ErrorCheck(err)
-	tvCol1, err = util.IsTreeViewColumn(obj)
-	util.ErrorCheck(err)
-	tvCol1.SetTitle("5678")
+	addRow(treeStore, nil, "xiaoli", "18", "male")
+	addRow(treeStore, nil, "xiaohua", "19", "female")
 
-	obj, err = builder.GetObject("tv_col3")
-	util.ErrorCheck(err)
-	tvCol1, err = util.IsTreeViewColumn(obj)
-	util.ErrorCheck(err)
-	tvCol1.SetTitle("abcd")
-
-	obj, err = builder.GetObject("tv_col4")
-	util.ErrorCheck(err)
-	tvCol1, err = util.IsTreeViewColumn(obj)
-	util.ErrorCheck(err)
-	tvCol1.SetTitle("efgh")
-	win.Show()
+	win.ShowAll()
 }
