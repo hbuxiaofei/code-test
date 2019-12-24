@@ -78,7 +78,20 @@ func Entry() {
 	util.ErrorCheck(err)
 
 	addRow(treeStore, nil, "xiaoli", "18", "male")
+	addRow(treeStore, nil, "xiaoliang", "18", "male")
 	addRow(treeStore, nil, "xiaohua", "19", "female")
+	addRow(treeStore, nil, "xiaohhont", "18", "female")
+
+	// getting scrolledwindow
+	obj, err = builder.GetObject("entry_scrolledwindow")
+	util.ErrorCheck(err)
+	scrolledWindow, err := util.IsScrolledWindow(obj)
+	util.ErrorCheck(err)
+
+	scrolledWindow.Connect("edge-reached", func() {
+		addRow(treeStore, nil, "xiaohua", "19", "female")
+		log.Printf("edge overshot...\n")
+	})
 
 	win.ShowAll()
 }

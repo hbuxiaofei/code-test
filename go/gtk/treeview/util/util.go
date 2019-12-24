@@ -48,11 +48,26 @@ func IsTreeView(obj glib.IObject) (*gtk.TreeView, error) {
 	}
 	return nil, errors.New("not a *gtk.TreeView")
 }
+
 func IsTreeStore(obj glib.IObject) (*gtk.TreeStore, error) {
 	if wd, ok := obj.(*gtk.TreeStore); ok {
 		return wd, nil
 	}
 	return nil, errors.New("not a *gtk.TreeStore")
+}
+
+func IsScrolledWindow(obj glib.IObject) (*gtk.ScrolledWindow, error) {
+	if wd, ok := obj.(*gtk.ScrolledWindow); ok {
+		return wd, nil
+	}
+	return nil, errors.New("not a *gtk.ScrolledWindow")
+}
+
+func IsScrollbar(obj glib.IObject) (*gtk.Scrollbar, error) {
+	if wd, ok := obj.(*gtk.Scrollbar); ok {
+		return wd, nil
+	}
+	return nil, errors.New("not a *gtk.Scrollbar")
 }
 
 func IsListStore(obj glib.IObject) (*gtk.ListStore, error) {
