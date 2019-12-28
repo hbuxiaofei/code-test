@@ -33,6 +33,18 @@ func Entry() {
 	height := rootwin.WindowGetHeight()
 	width := rootwin.WindowGetWidth()
 
+	// setting cursor
+	gdkWin, err := scr.GetRootWindow()
+	if err == nil {
+		display, err := gdk.DisplayGetDefault()
+		if err == nil {
+			cursor, err := gdk.CursorNewFromName(display, "default")
+			if err == nil {
+				gdkWin.SetCursor(cursor)
+			}
+		}
+	}
+
 	// getting window
 	obj, err := builder.GetObject("entry_window")
 	util.ErrorCheck(err)

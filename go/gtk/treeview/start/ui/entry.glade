@@ -19,7 +19,7 @@
       <placeholder/>
     </child>
     <child>
-      <object class="GtkBox" id="menu_box">
+      <object class="GtkBox" id="entry_box">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="orientation">vertical</property>

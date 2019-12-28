@@ -28,6 +28,21 @@ func IsBox(obj glib.IObject) (*gtk.Box, error) {
 	}
 	return nil, errors.New("not a *gtk.Box")
 }
+
+func IsTreeStore(obj glib.IObject) (*gtk.TreeStore, error) {
+	if wd, ok := obj.(*gtk.TreeStore); ok {
+		return wd, nil
+	}
+	return nil, errors.New("not a *gtk.TreeStore")
+}
+
+func IsScrolledWindow(obj glib.IObject) (*gtk.ScrolledWindow, error) {
+	if wd, ok := obj.(*gtk.ScrolledWindow); ok {
+		return wd, nil
+	}
+	return nil, errors.New("not a *gtk.ScrolledWindow")
+}
+
 func IsMenu(obj glib.IObject) (*gtk.Menu, error) {
 	if wd, ok := obj.(*gtk.Menu); ok {
 		return wd, nil
