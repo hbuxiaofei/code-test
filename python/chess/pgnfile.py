@@ -124,7 +124,7 @@ class Board(object):
     '前':'h', '中':'i', '后':'t',
     '二':'2', '三':'3', '四':'4', '五':'5'
     """
-    def __init__(self):
+    def __init__(self, fen=None):
         self._board = [
                 ['c', 'm', 'x', 's', 'j', 's', 'x', 'm', 'c'],
                 ['-', '-', '-', '-', '-', '-', '-', '-', '-'],
@@ -142,6 +142,55 @@ class Board(object):
         self._redlist = ['C', 'M', 'X', 'S', 'J', 'P', 'Z']
         self._leadlist = ['h', 'i', 't', '2', '3', '4', '5']
         self._actionlist = ['f', 'b', 'l']
+
+        self._fendic = {
+                '1':'-',
+                '2':'--',
+                '3':'---',
+                '4':'----',
+                '5':'-----',
+                '6':'------',
+                '7':'-------',
+                '8':'--------',
+                '9':'---------',
+                'r':'c',
+                'n':'m',
+                'b':'x',
+                'a':'s',
+                'k':'j',
+                'c':'p',
+                'p':'z',
+                'R':'C',
+                'N':'M',
+                'B':'X',
+                'A':'S',
+                'K':'J',
+                'C':'P',
+                'P':'Z',
+                }
+        if fen != None:
+            self.set_board_by_fen(fen)
+
+    def set_board_by_fen(self, fen):
+        fen_board = fen
+        row_list = fen_board.split("/")
+        fen_board = ''
+        for row in row_list:
+            for item in list(row):
+                fen_board = fen_board + self._fendic[item]
+            fen_board = fen_board + '/'
+        if len(fen_board):
+            fen_board = fen_board[:-1]
+            print(fen_board)
+
+            row_list = fen_board.split("/")
+            i = 0
+            for row in row_list:
+                j = 0
+                for item in list(row):
+                    self._board[i][j] = item
+                    j = j + 1
+                i = i + 1
 
     def print_obj(self):
         for row in self._board:
@@ -385,6 +434,8 @@ class Board(object):
         step = []
 
         line = fen.split("/")
+        if len(line) != 2:
+            return step
         pos = line[1][0:1]
         col = line[1][1:2]
         action = line[1][2:3]
@@ -399,9 +450,10 @@ class Board(object):
     def move(self, fen):
         step = self.get_step(fen)
         print("move: ", step)
-        kind = self.get_pos(step[0][0], step[0][1])
-        self.set_pos(kind, step[1][0], step[1][1])
-        self.set_pos('-', step[0][0], step[0][1])
+        if len(step):
+            kind = self.get_pos(step[0][0], step[0][1])
+            self.set_pos(kind, step[1][0], step[1][1])
+            self.set_pos('-', step[0][0], step[0][1])
 
     def show(self, flag=False):
         ground = Background()
@@ -458,8 +510,9 @@ class PgnFile(object):
         self._opening = {"match":r'\[Opening(\s+)\"(.*)\"\]', "val":None, "type":"var"}
         self._variation = {"match":r'\[Variation(\s+)\"(.*)\"\]', "val":None, "type":"var"}
         self._movelist = {"match":r'(\s+)([0-9]+\.)(\s)(.*)', "val":[], "type":"list"}
+        self._fenstart = {"match":r'\[FEN(\s+)\"(.*)\"\]', "val":None, "type":"var"}
 
-        self._fenlist = {"val":[], "type":"list"}
+        self._fenmovelist = {"val":[], "type":"list"}
 
     def get_val(self, line, dic):
         m = re.match(dic["match"], line)
@@ -472,9 +525,10 @@ class PgnFile(object):
         return False
 
     def get_fen_from_pgn(self, pgn, is_red=True):
-        fen = 'r/'
+        fen = ''
+        fen_color = 'r/'
         if not is_red:
-            fen = 'b/'
+            fen_color = 'b/'
         pgn_types = bytes(pgn, "utf-8")
         pgn_types_len = int(len(pgn_types))
         for i in range(pgn_types_len//3):
@@ -491,10 +545,13 @@ class PgnFile(object):
                 if is_match:
                     break
             i = i + 1
-        if is_red:
-            return fen
+        if len(fen):
+            if is_red:
+                return fen_color + fen
+            else:
+                return fen_color + fen.lower()
         else:
-            return fen.lower()
+            return None
 
     def load_file(self):
         with open(self._filepath) as fp:
@@ -527,18 +584,28 @@ class PgnFile(object):
                     pass
                 elif self.get_val(line, self._movelist):
                     pass
+                elif self.get_val(line, self._fenstart):
+                    pass
         for step in self._movelist["val"]:
-            step_bytes = bytes(step, "utf-8")
-            ret = self.get_fen_from_pgn(step.split()[0], is_red = True)
-            self._fenlist["val"].append(ret)
-            ret = self.get_fen_from_pgn(step.split()[1], is_red = False)
-            self._fenlist["val"].append(ret)
+            step = re.sub("[0-9]+\.", "", step)
+            step_array = step.split()
+            is_red = True
+            for item in step_array:
+                ret = self.get_fen_from_pgn(item, is_red)
+                self._fenmovelist["val"].append(ret)
+                is_red = not is_red
 
     def print_obj(self):
         print('\n'.join(['%s:%s' % item for item in self.__dict__.items()]))
 
-    def get_fenlist(self):
-        return self._fenlist
+    def get_fenmovelist(self):
+        return self._fenmovelist
+
+    def get_fenstart(self):
+        val = self._fenstart["val"]
+        if val != None:
+            return val.split()[0]
+        return None
 
 
 if __name__ == "__main__":
@@ -546,13 +613,13 @@ if __name__ == "__main__":
     pgn_file.load_file()
     pgn_file.print_obj()
 
-    board = Board()
+    board = Board(fen=pgn_file.get_fenstart())
     board.print_obj()
     board.print_board()
 
     os.system("clear")
-    fenlist = pgn_file.get_fenlist()
-    for fen in fenlist["val"]:
+    fenlist = pgn_file.get_fenmovelist()
+    for fen in [''] + fenlist["val"]:
         print("\x1b[0;0H")
         board.move(fen)
         board.show(True)
@@ -560,7 +627,6 @@ if __name__ == "__main__":
         in_put = input()
         if in_put == 'q':
             break
-
     #  str_utf8 = ['进', '退',  '前', '中', '后', '二 二', '平' ]
     #  for item in str_utf8:
         #  print("%s(%d)  %s(%d)" % (item, len(item), bytes(item, "utf-8"), len(bytes(item,"utf-8"))))
