@@ -24,12 +24,13 @@ def IntToSubscript(a):
         return 7
 
 
+# 评估函数
 def Eval():
     bValue = 0
     wValue = 0
     for i in range(16, 32):
 	if (piece[i]>0):
-		wValue = wValue + PieceValue[IntToSubscript(i)]
+            wValue = wValue + PieceValue[IntToSubscript(i)]
     for i in range(32, 48):
 	if (piece[i]>0):
 	    bValue = bValue + PieceValue[IntToSubscript(i)]

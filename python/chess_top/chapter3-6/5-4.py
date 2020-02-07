@@ -675,7 +675,7 @@ def InitGen():
     MoveNum = 0
 
 
-def SaveMove(from_pos, to_pos):
+def SaveMove(from_pos, to_pos, mv):
     global MoveNum
 
     p = board[to_pos]
