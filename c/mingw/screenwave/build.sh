@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-NAME="ScreenWare"
+NAME="ScreenWave"
 
-x86_64-w64-minigw32-gcc ./main.c -o ${NAME}.exe || exit 1
+x86_64-w64-mingw32-gcc main.c -o ${NAME}.exe || exit 1
 
-makensis ./in.nsi
+makensis in.nsi
 
 [ -e ${NAME}.exe ] && rm -f ${NAME}.exe
 

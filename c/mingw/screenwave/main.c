@@ -1,12 +1,16 @@
 #include <windows.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <signal.h>
 #include <dbt.h>
 #include <tchar.h>
+#include <time.h>
 
 #ifndef MAX_PATH
 #define MAX_PATH 128
 #endif
 
-#ifndef
+#ifndef SERVICE_NAME
 #define SERVICE_NAME "ScreenWave"
 #endif
 
@@ -33,12 +37,20 @@ void logging(const char* msg)
 {
     char log_file[MAX_PATH] = {0};
     FILE *fp = NULL;
+    time_t t;
+    struct tm* lt;
 
     GetModuleFileName(NULL, log_file, MAX_PATH);
 
     *strrchr(log_file, '\\') = 0;
     strcat(log_file, "\\log.txt");
-    fp = open(log_file, "a+");
+    fp = fopen(log_file, "a+");
+
+    time (&t);
+    lt = localtime (&t);
+    fprintf(fp, "[%d/%d/%d %d:%d:%d] ", lt->tm_year+1900, lt->tm_mon,
+            lt->tm_mday, lt->tm_hour, lt->tm_min, lt->tm_sec);
+
     fprintf(fp, msg);
     fflush(fp);
     fclose(fp);
@@ -80,7 +92,7 @@ static void quit_handler(int sig)
     int i = 0;
     HANDLE hEventTimeout;
 
-    logging("Thawing filesystems before exiting");
+    logging("Thawing filesystems before exiting!\n");
 
     hEventTimeout = OpenEvent(EVENT_ALL_ACCESS, FALSE, "EVENT_NAME_TIMEOUT");
     if (hEventTimeout) {
@@ -102,7 +114,7 @@ DWORD WINAPI service_ctrl_handler(DWORD ctrl, DWORD type, LPVOID data,
         case SERVICE_CONTROL_STOP:
         case SERVICE_CONTROL_SHUTDOWN:
             quit_handler(SIGTERM);
-            SetEvent(ga_state->wakeup_event);
+            SetEvent(g_service_state.wakeup_event);
             service->status.dwCurrentState = SERVICE_STOP_PENDING;
             SetServiceStatus(service->status_handle, &service->status);
             break;
@@ -162,12 +174,12 @@ VOID WINAPI service_main(DWORD argc, TCHAR *argv[])
 
 int main()
 {
-    logging("start main...");
+    logging("start main...\n");
 
     SERVICE_TABLE_ENTRY service_table[] = {
         { (char *)SERVICE_NAME, service_main }, { NULL, NULL } };
     StartServiceCtrlDispatcher(service_table);
 
-    logging("end main...");
+    logging("end main...\n");
     return 0;
 }

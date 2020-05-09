@@ -28,9 +28,9 @@ RequestExecutionLevel admin
 Section "install"
     SectionIn RO
 
-    setoutpath $INSTDIR
-    File ${NAME}.exe
-    call InstallServices
+    SetOutPath $INSTDIR
+    File "${NAME}.exe"
+    Call InstallServices
 SectionEnd ; end install
 
 Section "Uninstall"
@@ -39,13 +39,13 @@ Section "Uninstall"
 
     SetOutPath "$TEMP"
 
-    Delete /rebootok "$INSTDIR\log.txt"
+    # Delete /rebootok "$INSTDIR\log.txt"
     Delete /rebootok "$INSTDIR\${NAME}.exe"
-    #RMDir /rebootok /r "$INSTDIR"
+    # RMDir /rebootok /r "$INSTDIR"
 SectionEnd ; end Uninstall
 
 Section -post
-    writeuninstaller "$INSTDIR/Uninstall ${FILENAME}.exe"
+    WriteUninstaller "$INSTDIR\Uninstall.exe"
 SectionEnd ; end Section -post
 
 
