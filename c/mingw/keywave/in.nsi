@@ -28,20 +28,26 @@ RequestExecutionLevel admin
 Section "install"
     SectionIn RO
 
-    SetOutPath $INSTDIR
+    SetOutPath "$INSTDIR"
     File "${NAME}.exe"
+
+    SetOutPath "$INSTDIR\text"
+    File "text\*"
+
     Call InstallServices
+    # WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Run"  \
+            # "${NAME}" "$PROGRAMFILES\${NAME}\${NAME}.exe"
 SectionEnd ; end install
 
 Section "Uninstall"
     Call un.StopServices
     Call un.UninstallServices
-
+    # WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "${NAME}" ""
     SetOutPath "$TEMP"
 
-    # Delete /rebootok "$INSTDIR\log.txt"
+    Delete /rebootok "$INSTDIR\log.txt"
     Delete /rebootok "$INSTDIR\${NAME}.exe"
-    # RMDir /rebootok /r "$INSTDIR"
+    RMDir /rebootok /r "$INSTDIR\text"
 SectionEnd ; end Uninstall
 
 Section -post
@@ -80,7 +86,8 @@ Function InstallService
     ${endif}
 
     DetailPrint "Installing $R2 service"
-    SimpleSC::InstallService $R0 $R2 16 2 '"$R1"' "" "" ""
+    SimpleSC::InstallService $R0 $R2 272 2 '"$R1"' "" "" ""
+    # SimpleSC::InstallService $R0 $R2 16 2 '"$R1"' "" "" ""
     Pop $0
     ${if} $0 != 0
         DetailPrint "Failed to install $R2 service: $0"
