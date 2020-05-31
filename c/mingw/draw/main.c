@@ -6,6 +6,7 @@
 #include <tchar.h>
 #include <time.h>
 
+#pragma comment( linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"" )
 
 void draw_window()
 {
@@ -82,7 +83,7 @@ HFONT CreateFormatFont(LPCTSTR face, int width, int height, int angle)
 
 void draw_text()
 {
-    wchar_t text1[] = L"你好";
+    wchar_t text1[] = L"你好，这是一个测试，恭喜你！";
 
     // 获取一个可供画图的DC，我这里就直接用桌面算了
     HDC hdc = GetWindowDC(GetDesktopWindow());
@@ -99,7 +100,10 @@ void draw_text()
     HBRUSH hbrush_old = (HBRUSH)SelectObject(hdc, hbrush1);
     HFONT hfont_old = (HFONT)SelectObject(hdc, hfont1);
 
-    TextOutW(hdc, 800, 500, text1, wcslen(text1));
+    TextOutW(hdc, 900, 20, text1, wcslen(text1));
+    Sleep(100);
+    TextOutW(hdc, 900, 20, text1, wcslen(text1));
+    Sleep(100);
 
     // 恢复原来的画笔和画刷
     SelectObject(hdc, hpen_old);
@@ -111,11 +115,9 @@ void draw_text()
 
 int main()
 {
-    int i = 0;
-    for (i = 0; i < 10; i++) {
-        draw_text();
-        printf("times: %d\n", i);
-        Sleep(1000);
-    }
+    fclose(stdout);
+    fclose(stderr);
+    fclose(stdin);
+    draw_text();
     return 0;
 }

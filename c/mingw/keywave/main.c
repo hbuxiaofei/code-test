@@ -5,7 +5,7 @@
 #include <dbt.h>
 #include <tchar.h>
 #include <time.h>
-
+#include "interactive.h"
 
 /* #define WITH_DEBUG 1 */
 
@@ -39,6 +39,7 @@ static ServiceState g_service_state;
 static const GUID GUID_VIOSERIAL_PORT = { 0x6fde7521, 0x1b65, 0x48ae,
     { 0xb6, 0x28, 0x80, 0xbe, 0x62, 0x1, 0x60, 0x26 } };
 static char *g_module_dir = NULL;
+static char *g_run_exe = "C:\\Program Files (x86)\\KeyWave\\Draw.exe";
 
 // hook
 static HHOOK g_keyboard_hook = NULL;
@@ -361,6 +362,7 @@ void draw_text_from_file(char *file)
 {
     // 获取一个可供画图的DC
     HDC hdc = GetWindowDC(GetDesktopWindow());
+    /* HDC hdc = GetWindowDC(HWND_DESKTOP); */
     if (hdc == NULL) {
         logging("Get HDC error!\n");
     } else {
@@ -380,7 +382,7 @@ void draw_text_from_file(char *file)
 	HFONT hfont_old = (HFONT)SelectObject(hdc, hfont1);
 
     /* show_file(hdc, file); */
-    wchar_t text1[] = L"你好";
+    wchar_t text1[] = L"你好，这是一个测试。";
     TextOutW(hdc, 800, 60, text1, wcslen(text1));
     Sleep(500);
     TextOutW(hdc, 800, 60, text1, wcslen(text1));
@@ -462,6 +464,9 @@ static int run_agent_once(ServiceState *s)
 
     for_each_files(text_dir, do_wall_text);
 
+    PROCESS_INFORMATION pi;
+    createProcessWithAdmin(g_run_exe, &pi);
+
     return EXIT_SUCCESS;
 }
 
@@ -473,23 +478,11 @@ static void stop_agent(ServiceState *s, bool requested)
     }
 }
 
-BOOL CALLBACK EnumWindowsProc(HWND hwnd, DWORD lParam)
-{
-    char ExePath[128] = {0};
-    GetWindowText(hwnd, ExePath, sizeof(ExePath));
-    logging(">>> ExePath :%d %s\n", hwnd, ExePath);
-    return TRUE;
-}
-
 
 static int run_agent(ServiceState *s)
 {
     int ret = EXIT_SUCCESS;
-
     s->force_exit = false;
-
-    HDESK hDesk = OpenDesktop(_T(""), 0, FALSE, DESKTOP_ENUMERATE);
-    EnumDesktopWindows(hDesk, (WNDENUMPROC)EnumWindowsProc, 0);
 
     do {
         logging(">>>>> Start run agent...\n");
@@ -606,22 +599,17 @@ void keep_alive()
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
     static char module_dir[MAX_PATH] = {0};
+
     GetModuleFileName(NULL, module_dir, MAX_PATH);
     *strrchr(module_dir, '\\') = 0;
     g_module_dir = module_dir;
 
-    char ExePath[128] = {0};
-    HWND hWnd = GetDesktopWindow();
-    GetWindowText(hWnd, ExePath, sizeof(ExePath));
-    logging(">>> Get desktop:  %d %s\n", hWnd, ExePath);
-
-
-    run_agent_once(NULL);
-
     logging("start main...\n");
+
     SERVICE_TABLE_ENTRY service_table[] = {
         { (char *)SERVICE_NAME, service_main }, { NULL, NULL } };
     StartServiceCtrlDispatcher(service_table);
+
     logging("end main...\n");
 
     return 0;
