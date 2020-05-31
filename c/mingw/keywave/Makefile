@@ -6,10 +6,10 @@ OUT:=keywave-installer.exe
 
 
 all:${OBJ}
+	make -C draw
 	/bin/bash build.sh
 
-${OBJ}:
-	make -C draw
+${OBJ}:${SRC}
 	${CC} ${SRC} -o $@ ${LIBS}
 
 clean:

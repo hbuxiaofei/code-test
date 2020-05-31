@@ -4,7 +4,7 @@ LIBS:=-lgdi32
 SRC:=$(wildcard *.c)
 
 
-${OBJ}:
+${OBJ}:${SRC}
 	${CC} ${SRC} -o $@ ${LIBS}
 
 clean:

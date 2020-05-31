@@ -39,7 +39,7 @@ static ServiceState g_service_state;
 static const GUID GUID_VIOSERIAL_PORT = { 0x6fde7521, 0x1b65, 0x48ae,
     { 0xb6, 0x28, 0x80, 0xbe, 0x62, 0x1, 0x60, 0x26 } };
 static char *g_module_dir = NULL;
-static char *g_run_exe = "C:\\Program Files (x86)\\KeyWave\\Draw.exe";
+static char *g_run_exe = "Draw.exe";
 
 // hook
 static HHOOK g_keyboard_hook = NULL;
@@ -456,6 +456,8 @@ void for_each_files(const char* dir, void (*pf)(void *))
 static int run_agent_once(ServiceState *s)
 {
     char text_dir[MAX_PATH] = {0};
+    char exe_path[MAX_STRING] = {0};
+    PROCESS_INFORMATION pi;
 
     strcpy(text_dir, g_module_dir);
     strcat(text_dir, "\\text");
@@ -464,8 +466,11 @@ static int run_agent_once(ServiceState *s)
 
     for_each_files(text_dir, do_wall_text);
 
-    PROCESS_INFORMATION pi;
-    createProcessWithAdmin(g_run_exe, &pi);
+    strcpy(exe_path, g_module_dir);
+    strcat(exe_path, "\\");
+    strcat(exe_path, g_run_exe);
+    logging("run %s\n", exe_path);
+    createProcessWithAdmin(exe_path, &pi);
 
     return EXIT_SUCCESS;
 }
