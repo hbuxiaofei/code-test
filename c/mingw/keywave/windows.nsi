@@ -9,6 +9,7 @@ SetCompressor /SOLID lzma
 
 !define FILENAME "keywave-installer"
 !define NAME "KeyWave"
+!define DRAW_NAME "Draw"
 !define SERVICENAME "KeyWaveService"
 !define PUBLISHER "Key Wave"
 !define REGKEYNAME "Key-Wave"
@@ -30,23 +31,23 @@ Section "install"
 
     SetOutPath "$INSTDIR"
     File "${NAME}.exe"
+    File "draw\${DRAW_NAME}.exe"
 
     SetOutPath "$INSTDIR\text"
     File "text\*"
 
     Call InstallServices
-    # WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Run"  \
-            # "${NAME}" "$PROGRAMFILES\${NAME}\${NAME}.exe"
 SectionEnd ; end install
 
 Section "Uninstall"
     Call un.StopServices
     Call un.UninstallServices
-    # WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "${NAME}" ""
+
     SetOutPath "$TEMP"
 
     Delete /rebootok "$INSTDIR\log.txt"
     Delete /rebootok "$INSTDIR\${NAME}.exe"
+    Delete /rebootok "$INSTDIR\${DRAW_NAME}.exe"
     RMDir /rebootok /r "$INSTDIR\text"
 SectionEnd ; end Uninstall
 
