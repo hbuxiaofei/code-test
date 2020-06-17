@@ -12,48 +12,44 @@
 类层次平行的工厂类层次时；或者当一个类的实例只能有几个不同状态组合中的一种时。建
 立相应数目的原型并克隆它们可能比每次用合适的状态手工实例化该类更方便一些。
 
+假如你爱玩游戏，你能想到游戏里面有很多的角色，但是其实你有没有注意:脸型，身材，
+眼睛..这些其实都是略有不同的搭配， 这也就是原型的作用：不需要你每次都制造一个复
+杂的人物，只是根据一个原型的人物做些简单的修改即可。
+
 '''
 
-
-import copy
-
+# 这里肯定要做深拷贝，要不然python的就是对象的引用
+from copy import deepcopy
 
 class Prototype:
     def __init__(self):
-        self._objects = {}
+        self._objs = {}
 
-    def register_object(self, name, obj):
-        """Register an object"""
-        self._objects[name] = obj
+    def registerObject(self, name, obj):
+        """注册对象"""
+        self._objs[name] = obj
 
-    def unregister_object(self, name):
-        """Unregister an object"""
-        del self._objects[name]
+    def unregisterObject(self, name):
+        """取消注册"""
+        del self._objs[name]
 
     def clone(self, name, **attr):
-        """Clone a registered object and update inner attributes dictionary"""
-        obj = copy.deepcopy(self._objects.get(name))
+        """克隆对象"""
+        obj = deepcopy(self._objs[name])
+        # 但是会根据attr增加或覆盖原对象的属性
         obj.__dict__.update(attr)
         return obj
 
-
-def main():
-    class A:
-        def __str__(self):
-            return "I am A"
-
-    a = A()
-    prototype = Prototype()
-    prototype.register_object('a', a)
-    b = prototype.clone('a', a=1, b=2, c=3)
-
-    print(a)
-    print(b.__dict__)
-    print(b.a, b.b, b.c)
-
-'''
-通过执行结果我们可以看出：通过一个类的方法复制a对象，进行a对象的变量赋值
-
-'''
 if __name__ == '__main__':
-    main()
+    class A:
+        pass
+
+    a=A()
+    prototype=Prototype()
+    prototype.registerObject("a",a)
+    b=prototype.clone("a",a=1,b=2,c=3)
+
+    # 这里会返回对象a
+    print(a)
+    # 这里的对象其实已经被修改成(1, 2, 3)
+    print(b.a, b.b, b.c)
