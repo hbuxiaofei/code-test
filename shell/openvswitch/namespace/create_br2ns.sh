@@ -111,7 +111,9 @@ create_ns_witch_veth()
     fi
 
     ovs-vsctl add-port $DEFAULT_VSWITCH ${_veth1}
-    ovs-vsctl set port ${_veth1} tag=${_vlan}
+    if [ -n "$_vlan" ]; then
+        ovs-vsctl set port ${_veth1} tag=${_vlan}
+    fi
     ip link set dev ${_veth1} up
 
     echo -e "${c_green}[Info]${c_nc} create $_ns successfully, you may run:"
@@ -156,18 +158,11 @@ delete_ns_witch_veth()
 
 }
 
-exit 0
 
 create_ns_witch_veth 121 100
 create_ns_witch_veth 122 100
-create_ns_witch_veth 123 100
-
 exit 0
 
 delete_ns_witch_veth 121
 delete_ns_witch_veth 122
-delete_ns_witch_veth 123
-
 exit 0
-
-
