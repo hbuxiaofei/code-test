@@ -38,9 +38,7 @@ func teardown() {
 }
 
 func TestCase(t *testing.T) {
-	var kv KvConfig
-
-	kv.Init(gConfigFile)
+	kv := Load(gConfigFile)
 
 	ip := kv.Get("ip")
 	if ip != gIpaddr {

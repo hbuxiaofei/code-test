@@ -1,37 +1,30 @@
 package main
 
 import (
-    "fmt"
-    "go.uber.org/zap"
-    "etcdadmind/log"
-    "etcdadmind/config"
-)
-
-const (
-    gConfigFile = "etcdadmind.conf"
+	"etcdadmind/config"
+	"etcdadmind/log"
+	"etcdadmind/server"
+	"go.uber.org/zap"
 )
 
 var (
-    logger *zap.Logger
+	logger *zap.Logger
 )
 
 func main() {
-    fmt.Printf("etcdadmind\n")
+	cfg := config.Init()
 
-    var cfg config.KvConfig
-    cfg.Init(gConfigFile)
+	log.Init(log.Config{
+		Level: cfg.Get("LOG_LEVEL"),
+		File:  cfg.Get("LOG_FILE"),
+	})
 
-    logCfg := log.Config{
-        Level: cfg.Get("LOG_LEVEL"),
-        File : cfg.Get("LOG_FILE"),
-    }
-    log.Init(logCfg)
+	logger = log.GetLogger()
 
-    logger = log.GetLogger()
+	logger.Debug("hello debug")
+	logger.Info("hello info")
+	logger.Warn("hello warn")
+	logger.Error("hello error")
 
-    logger.Debug("hello debug")
-    logger.Info("hello info")
-    logger.Warn("hello warn")
-    logger.Error("hello error")
+	server.Init(cfg.Get("GRPC_PORT"))
 }
-

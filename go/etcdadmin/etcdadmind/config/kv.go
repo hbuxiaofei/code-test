@@ -16,7 +16,9 @@ type KvConfig struct {
 	rwMutex  *sync.RWMutex
 }
 
-func (kv *KvConfig) Init(path string) error {
+func Load(path string) *KvConfig {
+	kv := new(KvConfig)
+
 	kv.FilePath = path
 	kv.rwMutex = new(sync.RWMutex)
 	configMap := make(map[string]string)
@@ -24,7 +26,7 @@ func (kv *KvConfig) Init(path string) error {
 	f, err := os.OpenFile(path, os.O_RDONLY, 0666)
 	defer f.Close()
 	if err != nil {
-		return err
+		return nil
 	}
 
 	r := bufio.NewReader(f)
@@ -34,7 +36,7 @@ func (kv *KvConfig) Init(path string) error {
 			if err == io.EOF {
 				break
 			}
-			return err
+			return nil
 		}
 		s := strings.TrimSpace(string(b))
 		index := strings.Index(s, "=")
@@ -52,7 +54,7 @@ func (kv *KvConfig) Init(path string) error {
 		configMap[key] = value
 	}
 	kv.KvMap = configMap
-	return nil
+	return kv
 }
 
 func (kv *KvConfig) Get(key string) string {

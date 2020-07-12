@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package etcdadminpb;
+
+service GrpcEtcdAdmin{
+    rpc GrpcManagerEtcd(ManagerEtcdRequest) returns (ManagerEtcdReply) {}
+    rpc GrpcAddMember(AddMemberRequest) returns (AddMemberReply) {}
+}
+
+enum Retcode {
+    OK = 0;            // ok
+    FAIL = 1;          // fail
+}
+
+enum EtcdCmd {
+    STOP  = 0;          // stop
+    START = 1;          // start
+    RESTART = 2;        // restart
+}
+
+message ManagerEtcdRequest {
+    message Config  {
+        string key = 1;
+        string value = 2;
+    }
+    EtcdCmd cmd = 1;
+    repeated Config cfgs = 2;
+}
+
+message ManagerEtcdReply {
+	Retcode errcode = 1;
+    string errmsg = 2;
+}
+
+message AddMemberRequest {
+    message Member {
+        string name = 1;
+        string ip = 2;
+    }
+    repeated Member members = 1;
+}
+
+message AddMemberReply {
+	Retcode errcode = 1;
+    string errmsg = 2;
+}
