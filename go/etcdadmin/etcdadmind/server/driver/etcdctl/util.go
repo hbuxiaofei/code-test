@@ -39,7 +39,7 @@ exit:
 
 	return err
 }
-func getEtcdResetMap() map[string]string {
+func getEtcdResetMap() (map[string]string, error) {
 
 	cfgServer := config.Init()
 
@@ -47,11 +47,11 @@ func getEtcdResetMap() map[string]string {
 	lisC := fmt.Sprintf("http://0.0.0.0:%s", cfgServer.Get("ETCD_CLIENT_PORT"))
 	name, err := os.Hostname()
 	if err != nil {
-		return map[string]string{}
+		return map[string]string{}, err
 	}
 	addrs, err := net.LookupHost(name)
 	if err != nil {
-		return map[string]string{}
+		return map[string]string{}, err
 	}
 	advP := fmt.Sprintf("http://%s:%s", addrs[0],
 		cfgServer.Get("ETCD_PEER_PORT"))
@@ -74,15 +74,43 @@ func getEtcdResetMap() map[string]string {
 		"ETCD_INITIAL_CLUSTER_TOKEN":       "etcd-cluster",
 	}
 
-	return m
+	return m, nil
 }
 
-func ResetEtcdConfig() error {
-	cfgServer := config.Init()
+func resetEtcdConfig() error {
+	etcdCfgFile := config.Init().Get("ETCD_CONF_FILE")
 
-	cfgEtcdFile := cfgServer.Get("ETCD_CONF_FILE")
+	m, err := getEtcdResetMap()
 
-	m := getEtcdResetMap()
+	if err != nil {
+		return err
+	}
 
-	return writeEtcdConfig(cfgEtcdFile, m)
+	return writeEtcdConfig(etcdCfgFile, m)
+}
+
+func ResetEtcd(isStart bool) error {
+	var err error
+	result := &CmdResult{}
+
+	// Stop etcd, ignore error
+	CmdEtcdctlStop()
+
+	if err := resetEtcdConfig(); err != nil {
+		goto exit
+	}
+
+	if result = CmdDeleteWal(); result.err != nil {
+		err = result.err
+		goto exit
+	}
+
+exit:
+	if isStart == true {
+		result = CmdEtcdctlStart()
+		if err == nil {
+			err = result.err
+		}
+	}
+	return err
 }

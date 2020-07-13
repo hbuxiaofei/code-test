@@ -48,3 +48,19 @@ func TestCmdEtcdVersion(t *testing.T) {
 		fmt.Printf("err: %v\n", result.err)
 	}
 }
+
+func TestCmdEtcdMemberAdd(t *testing.T) {
+	t.Skip("skipping: do not add member")
+
+	result := CmdEtcdctlMemberAdd("test-name", "127.0.0.2")
+
+	if len(result.stdout) > 0 {
+		fmt.Printf("stdout: %v\n", result.stdout)
+	}
+	if len(result.stderr) > 0 {
+		fmt.Printf("stderr: %v\n", result.stderr)
+	}
+	if result.err != nil {
+		fmt.Printf("err: %v\n", result.err)
+	}
+}

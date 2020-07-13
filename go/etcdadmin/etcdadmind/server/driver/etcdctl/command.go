@@ -3,6 +3,9 @@ package etcdctl
 import (
 	"bytes"
 	"context"
+	"etcdadmind/config"
+	"fmt"
+	"os"
 	"os/exec"
 	"syscall"
 	"time"
@@ -76,4 +79,62 @@ func CmdEtcdctl(args ...string) *CmdResult {
 	argsWithDefault := append(args, "--dial-timeout=2s", "--command-timeout=3s")
 
 	return cmdExec(env, name, argsWithDefault...)
+}
+
+func CmdEtcdctlMemberAdd(name string, ip string) *CmdResult {
+	cfgServer := config.Init()
+
+	url := fmt.Sprintf("--peer-urls=http://%s:%s", ip,
+		cfgServer.Get("ETCD_PEER_PORT"))
+
+	return CmdEtcdctl("member", "add", name, url)
+}
+
+func CmdDeleteWal() *CmdResult {
+	result := &CmdResult{}
+
+	cfgServer := config.Init()
+
+	walDir := cfgServer.Get("ETCD_WAL_DIR")
+	snapDir := cfgServer.Get("ETCD_SNAP_DIR")
+
+	_, err := os.Stat(walDir)
+	if err == nil {
+		if os.RemoveAll(walDir); err != nil {
+			result.err = err
+			goto exit
+		}
+	}
+
+	_, err = os.Stat(snapDir)
+	if err == nil {
+		if os.RemoveAll(snapDir); err != nil {
+			result.err = err
+			goto exit
+		}
+	}
+
+exit:
+	return result
+}
+
+func CmdEtcdctlStat() *CmdResult {
+	env := []string{}
+	name := "systemctl"
+
+	return cmdExec(env, name, "status", "etcd")
+}
+
+func CmdEtcdctlStart() *CmdResult {
+	env := []string{}
+	name := "systemctl"
+
+	return cmdExec(env, name, "start", "etcd")
+}
+
+func CmdEtcdctlStop() *CmdResult {
+	env := []string{}
+	name := "systemctl"
+
+	return cmdExec(env, name, "stop", "etcd")
 }
