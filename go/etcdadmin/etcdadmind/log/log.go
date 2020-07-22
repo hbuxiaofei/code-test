@@ -13,13 +13,13 @@ type Config struct {
 }
 
 var (
-	gLevelMap = map[string]zapcore.Level{
+	levelMap = map[string]zapcore.Level{
 		"debug": zap.DebugLevel,
 		"info":  zap.InfoLevel,
 		"warn":  zap.WarnLevel,
 		"error": zap.ErrorLevel,
 	}
-	gLogger *zap.Logger
+	globalLogger *zap.Logger
 )
 
 func Init(cfg Config) error {
@@ -40,17 +40,17 @@ func Init(cfg Config) error {
 	core := zapcore.NewCore(
 		zapcore.NewJSONEncoder(encoder),
 		w,
-		gLevelMap[lvl],
+		levelMap[lvl],
 	)
 
 	caller := zap.AddCaller()
 	development := zap.Development()
 
-	gLogger = zap.New(core, caller, development)
+	globalLogger = zap.New(core, caller, development)
 
 	return nil
 }
 
 func GetLogger() *zap.Logger {
-	return gLogger
+	return globalLogger
 }

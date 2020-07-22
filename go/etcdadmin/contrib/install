@@ -1,0 +1,43 @@
+#!/bin/bash
+
+cd $(dirname $0)
+
+head1=($(systemctl cat etcd.service 2>/dev/null | head -n1))
+sysdir=$(pkg-config systemd --variable=systemdsystemunitdir 2>/dev/null)
+
+if [ x"$1" == x"uninstall" ]; then
+    if [ -e ${sysdir}/etcdadmind.service ]; then
+        rm -f ${sysdir}/etcdadmind.service
+        systemctl daemon-reload
+    fi
+    exit 0
+fi
+
+
+if [ ! -e /usr/bin/etcd ]; then
+    echo "err: /usr/bin/etcd not found"
+    exit 1
+fi
+
+if [ ${#head1[@]} -eq 2 ] && [ x"${head1[0]}" == x"#" ]  ; then
+    [ -e ${head1[1]} ] && install -m 644 etcd.service ${head1[1]}
+else
+    if [ -n "$sysdir" ] && [ -d "$sysdir" ]; then
+        install -m 644 etcd.service ${sysdir}/etcd.service
+    fi
+fi
+
+if command -v etcdadmind >/dev/null 2>&1; then
+    binpath=$(which etcdadmind 2>/dev/null)
+    if [ -n "$binpath" ] && [ -e "$binpath" ]; then
+        sed "s%<etcdadmind-bin>%$binpath%g" etcdadmind.service.in > etcdadmind.service 2>/dev/null
+        if [ -n "$sysdir" ] && [ -d "$sysdir" ]; then
+            install -m 644 etcdadmind.service ${sysdir}/etcdadmind.service
+            rm -f etcdadmind.service || :
+        fi
+    fi
+fi
+
+systemctl daemon-reload
+
+exit 0

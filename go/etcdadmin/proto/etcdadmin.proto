@@ -13,9 +13,10 @@ enum Retcode {
 }
 
 enum EtcdCmd {
-    STOP  = 0;          // stop
-    START = 1;          // start
-    RESTART = 2;        // restart
+    NONE = 0;           // none
+    STOP  = 1;          // stop
+    START = 2;          // start
+    RESTART = 3;        // restart
 }
 
 message ManagerEtcdRequest {
@@ -24,7 +25,8 @@ message ManagerEtcdRequest {
         string value = 2;
     }
     EtcdCmd cmd = 1;
-    repeated Config cfgs = 2;
+    bool clearwal = 2;
+    repeated Config cfgs = 3;
 }
 
 message ManagerEtcdReply {

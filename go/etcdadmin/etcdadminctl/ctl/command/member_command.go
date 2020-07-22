@@ -2,6 +2,7 @@ package command
 
 import (
 	"errors"
+	"etcdadminctl/client"
 	"fmt"
 	"strings"
 
@@ -9,8 +10,8 @@ import (
 )
 
 var (
-	memberPeerURLs string
-	isLearner      bool
+	memberPeerIP  string
+	newMemberName string
 )
 
 // NewMemberCommand returns the cobra command for "member".
@@ -29,14 +30,13 @@ func NewMemberCommand() *cobra.Command {
 // NewMemberAddCommand returns the cobra command for "member add".
 func NewMemberAddCommand() *cobra.Command {
 	cc := &cobra.Command{
-		Use:   "add <memberName> [options]",
+		Use:   "add <name>",
 		Short: "Adds a member into the cluster",
 
 		Run: memberAddCommandFunc,
 	}
 
-	cc.Flags().StringVar(&memberPeerURLs, "peer-urls", "", "comma separated peer URLs for the new member.")
-	cc.Flags().BoolVar(&isLearner, "learner", false, "indicates if the new member is raft learner")
+	cc.Flags().StringVar(&memberPeerIP, "peer-ip", "", "the ip address of new member.")
 
 	return cc
 }
@@ -63,28 +63,31 @@ func memberAddCommandFunc(cmd *cobra.Command, args []string) {
 	}
 	if len(args) > 1 {
 		ev := "too many arguments"
-		for _, s := range args {
-			if strings.HasPrefix(strings.ToLower(s), "http") {
-				ev += fmt.Sprintf(`, did you mean --peer-urls=%s`, s)
-			}
-		}
+		ev += fmt.Sprintf(", did you mean --peer-ip=%s", args[1])
 		ExitWithError(ExitBadArgs, errors.New(ev))
 	}
-	newMemberName := args[0]
+	newMemberName = args[0]
 
-	if len(memberPeerURLs) == 0 {
-		ExitWithError(ExitBadArgs, errors.New("member peer urls not provided"))
+	if len(memberPeerIP) == 0 {
+		ExitWithError(ExitBadArgs, errors.New("member peer ip not provided"))
 	}
 
-	urls := strings.Split(memberPeerURLs, ",")
-	if isLearner {
-		fmt.Printf("Learner, %v, %v\n", newMemberName, urls)
+	fmt.Printf("peer ip is: %v\n", memberPeerIP)
+
+	gf := getGlobalFlags(cmd)
+	fmt.Printf("endpoint: %v\n", gf.Endpoint)
+
+	s := strings.Split(gf.Endpoint, ":")
+	if len(s) == 2 {
+		c := client.New(s[0], s[1])
+		defer client.Release(c)
+		c.GrpcClientAddmember(newMemberName, memberPeerIP)
 	} else {
-		fmt.Printf("Not Learner, %v, %v\n", newMemberName, urls)
+		fmt.Printf("error endpoint: %v\n", gf.Endpoint)
 	}
 }
 
 // memberListCommandFunc executes the "member list" command.
 func memberListCommandFunc(cmd *cobra.Command, args []string) {
-    fmt.Printf("Display MemberList\n")
+	fmt.Printf("Display MemberList\n")
 }

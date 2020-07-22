@@ -5,7 +5,6 @@ import (
 	"context"
 	"etcdadmind/config"
 	"fmt"
-	"os"
 	"os/exec"
 	"syscall"
 	"time"
@@ -90,32 +89,8 @@ func CmdEtcdctlMemberAdd(name string, ip string) *CmdResult {
 	return CmdEtcdctl("member", "add", name, url)
 }
 
-func CmdDeleteWal() *CmdResult {
-	result := &CmdResult{}
-
-	cfgServer := config.Init()
-
-	walDir := cfgServer.Get("ETCD_WAL_DIR")
-	snapDir := cfgServer.Get("ETCD_SNAP_DIR")
-
-	_, err := os.Stat(walDir)
-	if err == nil {
-		if os.RemoveAll(walDir); err != nil {
-			result.err = err
-			goto exit
-		}
-	}
-
-	_, err = os.Stat(snapDir)
-	if err == nil {
-		if os.RemoveAll(snapDir); err != nil {
-			result.err = err
-			goto exit
-		}
-	}
-
-exit:
-	return result
+func CmdEtcdctlMemberList() *CmdResult {
+	return CmdEtcdctl("member", "list", "--write-out=json")
 }
 
 func CmdEtcdctlStat() *CmdResult {

@@ -1,0 +1,13 @@
+[Unit]
+Description=Etcdadmin Daemon
+After=network.target
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=notify
+ExecStart=<etcdadmind-bin>
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

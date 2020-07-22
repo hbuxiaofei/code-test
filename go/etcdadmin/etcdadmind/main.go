@@ -18,13 +18,8 @@ func main() {
 		Level: cfg.Get("LOG_LEVEL"),
 		File:  cfg.Get("LOG_FILE"),
 	})
-
 	logger = log.GetLogger()
 
-	logger.Debug("hello debug")
-	logger.Info("hello info")
-	logger.Warn("hello warn")
-	logger.Error("hello error")
-
+	logger.Info("etcdadmind start.")
 	server.Init(cfg.Get("GRPC_PORT"))
 }

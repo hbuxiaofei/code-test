@@ -10,7 +10,6 @@ import (
 )
 
 func Init(port string) error {
-
 	etcdS := &ImplEtcdAdminServer{
 		logger: log.GetLogger(),
 		port:   port,
@@ -27,8 +26,7 @@ func Init(port string) error {
 	s := grpc.NewServer()
 	pb.RegisterGrpcEtcdAdminServer(s, etcdS)
 
-	etcdS.logger.Info("start grpc sever")
-
+	etcdS.logger.Info(fmt.Sprintf("gRpc sever listening:%s", port))
 	s.Serve(listen)
 
 	return nil

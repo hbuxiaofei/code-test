@@ -64,3 +64,18 @@ func TestCmdEtcdMemberAdd(t *testing.T) {
 		fmt.Printf("err: %v\n", result.err)
 	}
 }
+
+func TestCmdEtcdctlMemberList(t *testing.T) {
+	result := CmdEtcdctlMemberList()
+
+	if len(result.stdout) > 0 {
+		fmt.Printf("stdout: %v\n", result.stdout)
+	}
+	if len(result.stderr) > 0 {
+		fmt.Printf("stderr: %v\n", result.stderr)
+	}
+	if result.err != nil {
+		fmt.Printf("err: %v\n", result.err)
+	}
+
+}

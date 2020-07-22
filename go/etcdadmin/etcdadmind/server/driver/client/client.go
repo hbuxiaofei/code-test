@@ -9,6 +9,15 @@ import (
 	"google.golang.org/grpc"
 )
 
+type EtcdCmdType int32
+
+const (
+	EtcdCmdNone    EtcdCmdType = 0
+	EtcdCmdStart   EtcdCmdType = 1
+	EtcdCmdStop    EtcdCmdType = 2
+	EtcdCmdRestart EtcdCmdType = 3
+)
+
 type GrpcClient struct {
 	caller pb.GrpcEtcdAdminClient
 	conn   *grpc.ClientConn
@@ -41,19 +50,33 @@ func Release(c *GrpcClient) error {
 	return c.conn.Close()
 }
 
-func (c *GrpcClient) GrpcClientManagerEtcd(m map[string]string) (*pb.ManagerEtcdReply, error) {
+func (c *GrpcClient) GrpcClientManagerEtcd(cfg map[string]string, clearwal bool,
+	cmd EtcdCmdType) (*pb.ManagerEtcdReply, error) {
+
 	if c.logger != nil {
 		c.logger.Info("call GrpcClientManagerEtcd")
 	}
 
 	var cfgs []*pb.ManagerEtcdRequest_Config
-
-	for key := range m {
-		cfg := pb.ManagerEtcdRequest_Config{Key: key, Value: m[key]}
+	for key := range cfg {
+		cfg := pb.ManagerEtcdRequest_Config{Key: key, Value: cfg[key]}
 		cfgs = append(cfgs, &cfg)
 	}
 
-	r, err := c.caller.GrpcManagerEtcd(context.Background(), &pb.ManagerEtcdRequest{Cfgs: cfgs})
+	var etcdCmd pb.EtcdCmd
+	switch cmd {
+	case EtcdCmdStop:
+		etcdCmd = pb.EtcdCmd_STOP
+	case EtcdCmdStart:
+		etcdCmd = pb.EtcdCmd_START
+	case EtcdCmdRestart:
+		etcdCmd = pb.EtcdCmd_RESTART
+	default:
+		etcdCmd = pb.EtcdCmd_NONE
+	}
+
+	r, err := c.caller.GrpcManagerEtcd(context.Background(),
+		&pb.ManagerEtcdRequest{Cmd: etcdCmd, Clearwal: clearwal, Cfgs: cfgs})
 
 	return r, err
 }

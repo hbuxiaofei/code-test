@@ -27,7 +27,7 @@ func TestGrpcClientAddmember(t *testing.T) {
 		"name1": "hostname1-test",
 		"name2": "hostname2-test",
 	}
-	client.GrpcClientManagerEtcd(m)
+	client.GrpcClientManagerEtcd(m, false, EtcdCmdNone)
 }
 
 // Test Entry
