@@ -27,7 +27,7 @@ func Init(port string) error {
 	pb.RegisterGrpcEtcdAdminServer(s, etcdS)
 
 	etcdS.logger.Info(fmt.Sprintf("gRpc sever listening:%s", port))
-	s.Serve(listen)
+	go s.Serve(listen)
 
 	return nil
 }
