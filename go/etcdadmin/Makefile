@@ -16,19 +16,20 @@ all: clean install
 
 contrib: all
 	bash contrib/install
+	bash build contrib
 
 uncontrib: uninstall
 	bash contrib/install uninstall
+	bash build uncontrib
 
 build-pre:
 	mkdir -p etcdadmind/pb/etcdadminpb || :
 	mkdir -p etcdadminctl/pb/etcdadminpb || :
-	protoc --go_out=plugins=grpc:./etcdadmind/pb/etcdadminpb -I./proto etcdadmin.proto
-	protoc --go_out=plugins=grpc:./etcdadminctl/pb/etcdadminpb -I./proto etcdadmin.proto
+	bash build build-pre
 
 clean:
 	$Q find . -type d -name pb | xargs rm -rf
 	$Q rm -f etcdadminctl/etcdadminctl || :
 	$Q rm -f etcdadmind/etcdadmind || :
 
-.PHONY: contrib
+.PHONY: contrib build
