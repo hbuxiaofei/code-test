@@ -27,13 +27,25 @@ else
     fi
 fi
 
+# link etcdadminctl to /usr/bin/etcdadminctl
+if command -v etcdadminctl >/dev/null 2>&1; then
+    binpath=$(which etcdadminctl 2>/dev/null)
+    if [ -n "$binpath" ] && [ -e "$binpath" ]; then
+        if [ x"$binpath" != x"/usr/bin/etcdadminctl" ]; then
+            ln -sf $binpath /usr/bin/etcdadminctl
+        fi
+    fi
+fi
+
+# link etcdadmind to /usr/bin/etcdadmind and install etcdadmind.service
 if command -v etcdadmind >/dev/null 2>&1; then
     binpath=$(which etcdadmind 2>/dev/null)
     if [ -n "$binpath" ] && [ -e "$binpath" ]; then
-        sed "s%<etcdadmind-bin>%$binpath%g" etcdadmind.service.in > etcdadmind.service 2>/dev/null
+        if [ x"$binpath" != x"/usr/bin/etcdadmind" ]; then
+            ln -sf $binpath /usr/bin/etcdadmind
+        fi
         if [ -n "$sysdir" ] && [ -d "$sysdir" ]; then
             install -m 644 etcdadmind.service ${sysdir}/etcdadmind.service
-            rm -f etcdadmind.service || :
         fi
     fi
 fi

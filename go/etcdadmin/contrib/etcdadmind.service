@@ -6,7 +6,7 @@ Wants=network-online.target
 
 [Service]
 Type=notify
-ExecStart=<etcdadmind-bin>
+ExecStart=/usr/bin/etcdadmind
 Restart=on-failure
 
 [Install]
