@@ -54,3 +54,14 @@ func (c *EtcdClient) MemberList() map[string]string {
 
     return m
 }
+
+// peerUrl: http://<ip>:<port>
+func (c *EtcdClient) MemberAdd(peerUrl string) error {
+    req := &pb.MemberAddRequest{
+	PeerUrls: [peerUrl],
+    }
+
+    _, err := c.caller.MemberAdd(context.Background(), req)
+
+    return err
+}
