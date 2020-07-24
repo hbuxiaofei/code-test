@@ -9,50 +9,16 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-
-	"github.com/takama/daemon"
-)
-
-const (
-	// name of the service
-	name        = "etcdadmin"
-	description = "Etcd admin daemon"
 )
 
 var (
 	logger *zap.Logger
 )
 
-// Service has embedded daemon
-type Service struct {
-	daemon.Daemon
-}
+// Manage run the daemon
+func manage() (string, error) {
 
-// Manage by daemon commands or run the daemon
-func (service *Service) Manage() (string, error) {
-
-	usage := "Usage: myservice install | remove | start | stop | status"
-
-	// if received any kind of command, do it
-	if len(os.Args) > 1 {
-		command := os.Args[1]
-		switch command {
-		case "install":
-			return service.Install()
-		case "remove":
-			return service.Remove()
-		case "start":
-			return service.Start()
-		case "stop":
-			return service.Stop()
-		case "status":
-			return service.Status()
-		default:
-			return usage, nil
-		}
-	}
-
-	// Do something, call your goroutines, etc
+	// Do something, call goroutines, etc
 	run()
 
 	// Set up channel on which to send signal notifications.
@@ -61,8 +27,7 @@ func (service *Service) Manage() (string, error) {
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, os.Kill, syscall.SIGTERM)
 
-	// loop work cycle with accept connections or interrupt
-	// by system signal
+	// loop work cycle with accept interrupt by system signal
 	for {
 		select {
 		case killSignal := <-interrupt:
@@ -75,7 +40,7 @@ func (service *Service) Manage() (string, error) {
 	}
 
 	// never happen, but need to complete code
-	return usage, nil
+	return "Exit", nil
 }
 
 func run() {
@@ -92,15 +57,7 @@ func run() {
 }
 
 func main() {
-	var dependencies = []string{}
-
-	srv, err := daemon.New(name, description, dependencies...)
-	if err != nil {
-		fmt.Println("Error: ", err)
-		os.Exit(1)
-	}
-	service := &Service{srv}
-	status, err := service.Manage()
+	status, err := manage()
 	if err != nil {
 		fmt.Println(status, "\nError: ", err)
 		os.Exit(1)
