@@ -15,6 +15,12 @@ type EtcdClient struct {
 	conn   *grpc.ClientConn
 }
 
+type EtcdMember struct {
+	Name   string
+	Ipaddr string
+	Id     uint64
+}
+
 func New(ip string, port string) *EtcdClient {
 	c := &EtcdClient{
 		ip:   ip,
@@ -37,8 +43,9 @@ func Release(c *EtcdClient) error {
 	return c.conn.Close()
 }
 
-func (c *EtcdClient) MemberList() map[string]string {
-	m := make(map[string]string)
+// func (c *EtcdClient) MemberList() map[string]string {
+func (c *EtcdClient) MemberList() []*EtcdMember {
+	mslice := []*EtcdMember{}
 
 	req := &pb.MemberListRequest{}
 
@@ -48,11 +55,15 @@ func (c *EtcdClient) MemberList() map[string]string {
 
 		ip := strings.Split(member.PeerURLs[0], "//")[1]
 		ip = strings.Split(ip, ":")[0]
-
-		m[member.Name] = ip
+		m := &EtcdMember{
+			Name:   member.Name,
+			Ipaddr: ip,
+			Id:     member.ID,
+		}
+		mslice = append(mslice, m)
 	}
 
-	return m
+	return mslice
 }
 
 // peerUrl: http://<ip>:<port>
@@ -61,6 +72,15 @@ func (c *EtcdClient) MemberAdd(peerUrl string) error {
 		PeerURLs: []string{peerUrl},
 	}
 	_, err := c.remote.MemberAdd(context.Background(), req)
+
+	return err
+}
+
+func (c *EtcdClient) MemberRemove(id uint64) error {
+	req := &pb.MemberRemoveRequest{
+		ID: id,
+	}
+	_, err := c.remote.MemberRemove(context.Background(), req)
 
 	return err
 }

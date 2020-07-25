@@ -66,3 +66,17 @@ func (c *GrpcClient) GrpcClientListmember() (map[string]string, error) {
 	}
 	return m, nil
 }
+
+func (c *GrpcClient) GrpcClientRemovemember(name string) error {
+	r, err := c.caller.GrpcRemoveMember(context.Background(),
+		&pb.RemoveMemberRequest{
+			Name: name,
+		})
+
+	if err != nil {
+		fmt.Printf("%v %v\n", r.Errcode, r.Errmsg)
+		return err
+	}
+
+	return nil
+}

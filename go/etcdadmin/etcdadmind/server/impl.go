@@ -32,16 +32,16 @@ func (imp *ImplEtcdAdminServer) GrpcManagerEtcd(
 
 	imp.logger.Info(fmt.Sprintf("call GrpcManagerEtcd: %v", req))
 
-	imp.drv.ManagerEtcd(req.Cmd, req.Clearwal, req.Cfgs)
+	err := imp.drv.ManagerEtcd(req.Cmd, req.Clearwal, req.Cfgs)
 
-	return &pb.ManagerEtcdReply{Errcode: pb.Retcode_OK}, nil
+	return &pb.ManagerEtcdReply{Errcode: pb.Retcode_OK}, err
 }
 
 func (imp *ImplEtcdAdminServer) GrpcListMember(
 	ctx context.Context,
 	req *pb.ListMemberRequest) (*pb.ListMemberReply, error) {
 
-	imp.logger.Info(fmt.Sprintf("call GrpcListMember: %v", req))
+	imp.logger.Info(fmt.Sprintf("call GrpcListMember"))
 
 	memberList, err := imp.drv.ListMember()
 
@@ -50,4 +50,15 @@ func (imp *ImplEtcdAdminServer) GrpcListMember(
 	}
 
 	return rep, err
+}
+
+func (imp *ImplEtcdAdminServer) GrpcRemoveMember(
+	ctx context.Context,
+	req *pb.RemoveMemberRequest) (*pb.RemoveMemberReply, error) {
+
+	imp.logger.Info(fmt.Sprintf("call GrpcRemoveMember: %v", req))
+
+	err := imp.drv.RemoveMember(req.Name)
+
+	return &pb.RemoveMemberReply{Errcode: pb.Retcode_OK}, err
 }

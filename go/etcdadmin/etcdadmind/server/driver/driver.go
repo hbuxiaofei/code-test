@@ -17,6 +17,7 @@ type DriverInterface interface {
 	AddMember(m *pb.AddMemberRequest_Member) error
 	ManagerEtcd(cmd pb.EtcdCmd, clearwal bool, cfgs []*pb.ManagerEtcdRequest_Config) error
 	ListMember() ([]*pb.ListMemberReply_Member, error)
+	RemoveMember(name string) error
 }
 
 type DriverImpl struct {
@@ -103,8 +104,9 @@ func (drv *DriverImpl) AddMember(m *pb.AddMemberRequest_Member) error {
 
 		members := etcdcli.MemberList()
 		initCluster := ""
-		for i := range members {
-			initCluster = fmt.Sprintf("%s%s=http://%s:%s,", initCluster, i, members[i], peerPort)
+		for _, i := range members {
+			initCluster = fmt.Sprintf("%s%s=http://%s:%s,", initCluster,
+				i.Name, i.Ipaddr, peerPort)
 		}
 		initCluster = fmt.Sprintf("%s%s=http://%s:%s", initCluster, m.Name, m.Ip, peerPort)
 		cfgs["ETCD_INITIAL_CLUSTER"] = initCluster
@@ -156,13 +158,31 @@ func (drv *DriverImpl) ListMember() ([]*pb.ListMemberReply_Member, error) {
 	defer etcdclient.Release(etcdcli)
 
 	members := etcdcli.MemberList()
-	for m := range members {
+	for _, m := range members {
 		memberInfo := &pb.ListMemberReply_Member{
-			Name: m,
-			Ip:   members[m],
+			Name: m.Name,
+			Ip:   m.Ipaddr,
 		}
 		memberList = append(memberList, memberInfo)
 	}
 
 	return memberList, nil
+}
+
+func (drv *DriverImpl) RemoveMember(name string) error {
+	cfgStore := config.Init()
+	clientPort := cfgStore.Get("ETCD_CLIENT_PORT")
+
+	etcdcli := etcdclient.New("127.0.0.1", clientPort)
+	defer etcdclient.Release(etcdcli)
+
+	var err error
+	members := etcdcli.MemberList()
+	for _, m := range members {
+		if m.Name == name {
+			err = etcdcli.MemberRemove(m.Id)
+		}
+	}
+
+	return err
 }

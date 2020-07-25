@@ -23,6 +23,7 @@ func NewMemberCommand() *cobra.Command {
 
 	mc.AddCommand(NewMemberAddCommand())
 	mc.AddCommand(NewMemberListCommand())
+	mc.AddCommand(NewMemberRemoveCommand())
 
 	return mc
 }
@@ -51,6 +52,18 @@ The items in the lists are ID, Status, Name, Peer Addrs, Client Addrs, Is Learne
 `,
 
 		Run: memberListCommandFunc,
+	}
+
+	return cc
+}
+
+// NewMemberRemoveCommand returns the cobra command for "member remove".
+func NewMemberRemoveCommand() *cobra.Command {
+	cc := &cobra.Command{
+		Use:   "remove <name>",
+		Short: "Removes a member from the cluster",
+
+		Run: memberRemoveCommandFunc,
 	}
 
 	return cc
@@ -89,7 +102,7 @@ func memberAddCommandFunc(cmd *cobra.Command, args []string) {
 
 // memberListCommandFunc executes the "member list" command.
 func memberListCommandFunc(cmd *cobra.Command, args []string) {
-	fmt.Printf("Display MemberList\n")
+	fmt.Printf("Display members\n")
 
 	gf := getGlobalFlags(cmd)
 	fmt.Printf("endpoint: %v\n", gf.Endpoint)
@@ -107,5 +120,32 @@ func memberListCommandFunc(cmd *cobra.Command, args []string) {
 		}
 	} else {
 		fmt.Printf("error endpoint: %v\n", gf.Endpoint)
+	}
+}
+
+// memberRemoveCommandFunc executes the "member remove" command.
+func memberRemoveCommandFunc(cmd *cobra.Command, args []string) {
+	if len(args) != 1 {
+		ExitWithError(ExitBadArgs, fmt.Errorf("member name is not provided"))
+	}
+
+	fmt.Printf("Remove member name: %s\n", args[0])
+	name := args[0]
+
+	gf := getGlobalFlags(cmd)
+	fmt.Printf("endpoint: %v\n", gf.Endpoint)
+
+	s := strings.Split(gf.Endpoint, ":")
+	if len(s) == 2 {
+		c := client.New(s[0], s[1])
+		defer client.Release(c)
+		err := c.GrpcClientRemovemember(name)
+
+		if err != nil {
+			fmt.Printf("%v\n", err)
+		}
+	} else {
+		fmt.Printf("error endpoint: %v\n", gf.Endpoint)
+
 	}
 }

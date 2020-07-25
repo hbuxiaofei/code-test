@@ -11,6 +11,8 @@ service GrpcEtcdAdmin{
     rpc GrpcAddMember(AddMemberRequest) returns (AddMemberReply) {}
 
     rpc GrpcListMember(ListMemberRequest) returns (ListMemberReply) {}
+
+    rpc GrpcRemoveMember(RemoveMemberRequest) returns (RemoveMemberReply) {}
 }
 
 enum Retcode {
@@ -64,4 +66,13 @@ message ListMemberReply {
 	Retcode errcode = 1;
     string errmsg = 2;
     repeated Member members = 3;
+}
+
+message RemoveMemberRequest {
+    string name = 1;
+}
+
+message RemoveMemberReply {
+    Retcode errcode = 1;
+    string errmsg = 2;
 }
