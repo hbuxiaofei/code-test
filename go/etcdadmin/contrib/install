@@ -41,7 +41,7 @@ fi
 
 # link etcdadmind to /usr/bin/etcdadmind and install etcdadmind.service
 if command -v etcdadmind >/dev/null 2>&1; then
-    systemctl stop etcdadmind.service || :
+    systemctl stop etcdadmind.service >/dev/null 2>&1 || :
 
     binpath=$(which etcdadmind 2>/dev/null)
     if [ -n "$binpath" ] && [ -e "$binpath" ]; then

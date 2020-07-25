@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package etcdadminpb;
 
+option go_package = ".;etcdadminpb";
+
 service GrpcEtcdAdmin{
     rpc GrpcManagerEtcd(ManagerEtcdRequest) returns (ManagerEtcdReply) {}
     rpc GrpcAddMember(AddMemberRequest) returns (AddMemberReply) {}
