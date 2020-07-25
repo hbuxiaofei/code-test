@@ -90,4 +90,22 @@ func memberAddCommandFunc(cmd *cobra.Command, args []string) {
 // memberListCommandFunc executes the "member list" command.
 func memberListCommandFunc(cmd *cobra.Command, args []string) {
 	fmt.Printf("Display MemberList\n")
+
+	gf := getGlobalFlags(cmd)
+	fmt.Printf("endpoint: %v\n", gf.Endpoint)
+
+	s := strings.Split(gf.Endpoint, ":")
+	if len(s) == 2 {
+		c := client.New(s[0], s[1])
+		defer client.Release(c)
+		m, err := c.GrpcClientListmember()
+		if err == nil {
+			fmt.Printf("\nMembers:\n")
+			for i := range m {
+				fmt.Printf("name:%s ip:%s\n", i, m[i])
+			}
+		}
+	} else {
+		fmt.Printf("error endpoint: %v\n", gf.Endpoint)
+	}
 }

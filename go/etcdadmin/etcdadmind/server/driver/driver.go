@@ -5,9 +5,9 @@ import (
 	"etcdadmind/log"
 	pb "etcdadmind/pb/etcdadminpb"
 	"etcdadmind/server/driver/client"
+	"etcdadmind/server/driver/command"
 	"etcdadmind/server/driver/etcdcfg"
 	"etcdadmind/server/driver/etcdclient"
-	"etcdadmind/server/driver/etcdctl"
 	"etcdadmind/utils"
 	"fmt"
 	"go.uber.org/zap"
@@ -15,7 +15,8 @@ import (
 
 type DriverInterface interface {
 	AddMember(m *pb.AddMemberRequest_Member) error
-	ManagerEtcd(cmd pb.EtcdCmd, clearwal bool, cfgs []*pb.ManagerEtcdRequest_Config)
+	ManagerEtcd(cmd pb.EtcdCmd, clearwal bool, cfgs []*pb.ManagerEtcdRequest_Config) error
+	ListMember() ([]*pb.ListMemberReply_Member, error)
 }
 
 type DriverImpl struct {
@@ -39,7 +40,7 @@ func resetEtcd(isStart bool) error {
 	var err error
 
 	// Stop etcd, ignore error
-	etcdctl.CmdEtcdctlStop()
+	command.CmdEtcdctlStop()
 
 	if err := resetEtcdConfig(); err != nil {
 		goto exit
@@ -51,7 +52,7 @@ func resetEtcd(isStart bool) error {
 
 exit:
 	if isStart == true {
-		er := etcdctl.EtcdctlStart()
+		er := command.EtcdctlStart()
 		if err == nil {
 			err = er
 		}
@@ -117,11 +118,12 @@ func (drv *DriverImpl) AddMember(m *pb.AddMemberRequest_Member) error {
 	return nil
 }
 
-func (drv *DriverImpl) ManagerEtcd(cmd pb.EtcdCmd, clearwal bool, cfgs []*pb.ManagerEtcdRequest_Config) {
+func (drv *DriverImpl) ManagerEtcd(cmd pb.EtcdCmd, clearwal bool,
+	cfgs []*pb.ManagerEtcdRequest_Config) error {
 	cfgStore := config.Init()
 
 	if cmd != pb.EtcdCmd_NONE {
-		etcdctl.CmdEtcdctlStop()
+		command.CmdEtcdctlStop()
 	}
 
 	if len(cfgs) > 0 {
@@ -139,7 +141,28 @@ func (drv *DriverImpl) ManagerEtcd(cmd pb.EtcdCmd, clearwal bool, cfgs []*pb.Man
 	}
 
 	if cmd == pb.EtcdCmd_START || cmd == pb.EtcdCmd_RESTART {
-		etcdctl.CmdEtcdctlStart()
+		command.CmdEtcdctlStart()
+	}
+	return nil
+}
+
+func (drv *DriverImpl) ListMember() ([]*pb.ListMemberReply_Member, error) {
+	memberList := []*pb.ListMemberReply_Member{}
+
+	cfgStore := config.Init()
+	clientPort := cfgStore.Get("ETCD_CLIENT_PORT")
+
+	etcdcli := etcdclient.New("127.0.0.1", clientPort)
+	defer etcdclient.Release(etcdcli)
+
+	members := etcdcli.MemberList()
+	for m := range members {
+		memberInfo := &pb.ListMemberReply_Member{
+			Name: m,
+			Ip:   members[m],
+		}
+		memberList = append(memberList, memberInfo)
 	}
 
+	return memberList, nil
 }

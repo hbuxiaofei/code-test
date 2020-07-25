@@ -1,4 +1,4 @@
-package etcdctl
+package command
 
 import (
 	"fmt"

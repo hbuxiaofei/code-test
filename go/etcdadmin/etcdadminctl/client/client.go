@@ -49,3 +49,20 @@ func (c *GrpcClient) GrpcClientAddmember(name string, ip string) {
 		fmt.Printf("%v %v\n", r.Errcode, r.Errmsg)
 	}
 }
+
+func (c *GrpcClient) GrpcClientListmember() (map[string]string, error) {
+	m := make(map[string]string)
+
+	r, err := c.caller.GrpcListMember(context.Background(),
+		&pb.ListMemberRequest{})
+
+	if err != nil {
+		fmt.Printf("%v %v\n", r.Errcode, r.Errmsg)
+		return m, err
+	}
+
+	for _, member := range r.Members {
+		m[member.Name] = member.Ip
+	}
+	return m, nil
+}

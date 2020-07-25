@@ -5,8 +5,12 @@ package etcdadminpb;
 option go_package = ".;etcdadminpb";
 
 service GrpcEtcdAdmin{
+    // call for private
     rpc GrpcManagerEtcd(ManagerEtcdRequest) returns (ManagerEtcdReply) {}
+
     rpc GrpcAddMember(AddMemberRequest) returns (AddMemberReply) {}
+
+    rpc GrpcListMember(ListMemberRequest) returns (ListMemberReply) {}
 }
 
 enum Retcode {
@@ -47,4 +51,17 @@ message AddMemberRequest {
 message AddMemberReply {
 	Retcode errcode = 1;
     string errmsg = 2;
+}
+
+message ListMemberRequest {
+}
+
+message ListMemberReply {
+    message Member {
+        string name = 1;
+        string ip = 2;
+    }
+	Retcode errcode = 1;
+    string errmsg = 2;
+    repeated Member members = 3;
 }

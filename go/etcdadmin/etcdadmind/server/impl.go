@@ -36,3 +36,18 @@ func (imp *ImplEtcdAdminServer) GrpcManagerEtcd(
 
 	return &pb.ManagerEtcdReply{Errcode: pb.Retcode_OK}, nil
 }
+
+func (imp *ImplEtcdAdminServer) GrpcListMember(
+	ctx context.Context,
+	req *pb.ListMemberRequest) (*pb.ListMemberReply, error) {
+
+	imp.logger.Info(fmt.Sprintf("call GrpcListMember: %v", req))
+
+	memberList, err := imp.drv.ListMember()
+
+	rep := &pb.ListMemberReply{
+		Members: memberList,
+	}
+
+	return rep, err
+}
