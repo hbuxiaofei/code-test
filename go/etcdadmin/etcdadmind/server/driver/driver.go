@@ -14,9 +14,16 @@ import (
 )
 
 type DriverInterface interface {
+	// Attempts to add a member into the cluster.
 	AddMember(m *pb.AddMemberRequest_Member) error
+
+	// Manager config files include wal of etcd, and alse manger etcd service.
 	ManagerEtcd(cmd pb.EtcdCmd, clearwal bool, cfgs []*pb.ManagerEtcdRequest_Config) error
+
+	// Lists all the members in the cluster.
 	ListMember() ([]*pb.ListMemberReply_Member, error)
+
+	// Removes a member from the cluster.
 	RemoveMember(name string) error
 }
 
@@ -40,7 +47,7 @@ func resetEtcdConfig() error {
 func resetEtcd(isStart bool) error {
 	var err error
 
-	// Stop etcd, ignore error
+	// Stop etcd but ignore error
 	command.CmdEtcdctlStop()
 
 	if err := resetEtcdConfig(); err != nil {
@@ -88,7 +95,7 @@ func (drv *DriverImpl) AddMember(m *pb.AddMemberRequest_Member) error {
 		return err
 	}
 
-	// remote clean etcd.cfg, wal and stop etcd
+	// Remote clean etcd.cfg, wal and stop etcd
 	cfgs, _ := etcdcfg.EtcdConfigMapInit()
 	c.GrpcClientManagerEtcd(cfgs, true, client.EtcdCmdStop)
 
@@ -111,10 +118,10 @@ func (drv *DriverImpl) AddMember(m *pb.AddMemberRequest_Member) error {
 		initCluster = fmt.Sprintf("%s%s=http://%s:%s", initCluster, m.Name, m.Ip, peerPort)
 		cfgs["ETCD_INITIAL_CLUSTER"] = initCluster
 
-		// add member to cluster
+		// Add member to cluster
 		etcdcli.MemberAdd(cfgs["ETCD_INITIAL_ADVERTISE_PEER_URLS"])
 
-		// remote writing etcd.cfg and start etcd
+		// Remote writing etcd.cfg and start etcd
 		c.GrpcClientManagerEtcd(cfgs, false, client.EtcdCmdStart)
 	}
 	return nil

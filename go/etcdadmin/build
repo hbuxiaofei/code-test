@@ -9,11 +9,14 @@ build_pre()
     if command -v protoc >/dev/null 2>&1; then
         protoc --go_out=plugins=grpc:./etcdadmind/pb/etcdadminpb -I./proto etcdadmin.proto
         protoc --go_out=plugins=grpc:./etcdadminctl/pb/etcdadminpb -I./proto etcdadmin.proto
-    else
+    elif ${PYTHON} -m grpc_tools.protoc >/dev/null 2>&1; then
         ${PYTHON} -m grpc_tools.protoc \
                 --go_out=plugins=grpc:./etcdadmind/pb/etcdadminpb -I./proto etcdadmin.proto
         ${PYTHON} -m grpc_tools.protoc \
                 --go_out=plugins=grpc:./etcdadminctl/pb/etcdadminpb -I./proto etcdadmin.proto
+    else
+        echo "err: command protoc or grpc_tools.protoc module of ${PYTHON} not found"
+        exit 1
     fi
 }
 
@@ -27,7 +30,7 @@ contrib()
 
 uncontrib()
 {
-    [ -d /etc/etcdadmin ] && rm -rf /etcd/etcdadmin
+    [ -d /etc/etcdadmin ] && rm -rf /etc/etcdadmin
 }
 
 

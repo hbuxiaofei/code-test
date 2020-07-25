@@ -11,7 +11,9 @@ if [ x"$1" == x"uninstall" ]; then
         systemctl daemon-reload
     fi
     [ -e /usr/bin/etcdadmind ] && rm -f /usr/bin/etcdadmind
+    [ -e /usr/bin/etcdadminctl ] && rm -f /usr/bin/etcdadminctl
     command -v etcdadmind && which etcdadmind | xargs rm -f || :
+    command -v etcdadminctl && which etcdadminctl | xargs rm -f || :
     exit 0
 fi
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"etcdadmind/config"
+	"etcdadmind/daemon"
 	"etcdadmind/log"
 	"etcdadmind/server"
 	"fmt"
@@ -11,19 +12,49 @@ import (
 	"syscall"
 )
 
+// Service has embedded daemon
+type Service struct {
+	daemon.Daemon
+}
+
+const (
+	// name of the service
+	serviceName        = "etcdadmind"
+	serviceDescription = "Etcd admin daemon"
+)
+
 var (
-	logger *zap.Logger
+	logger              *zap.Logger
+	serviceDependencies = []string{"etcd.service"}
 )
 
 // Manage run the daemon
-func manage() (string, error) {
+func (service *Service) Manage() (string, error) {
+	usage := "Usage: myservice install | remove | start | stop | status"
+
+	// if received any kind of command, do it
+	if len(os.Args) > 1 {
+		command := os.Args[1]
+		switch command {
+		case "install":
+			return service.Install()
+		case "remove":
+			return service.Remove()
+		case "start":
+			return service.Start()
+		case "stop":
+			return service.Stop()
+		case "status":
+			return service.Status()
+		default:
+			return usage, nil
+		}
+	}
 
 	// Do something, call goroutines, etc
 	run()
 
 	// Set up channel on which to send signal notifications.
-	// We must use a buffered channel or risk missing the signal
-	// if we're not ready to receive when the signal is sent.
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, os.Kill, syscall.SIGTERM)
 
@@ -57,7 +88,15 @@ func run() {
 }
 
 func main() {
-	status, err := manage()
+	srv, err := daemon.New(serviceName, serviceDescription,
+		daemon.SystemDaemon, serviceDependencies...)
+	if err != nil {
+		fmt.Println("Error: ", err)
+		os.Exit(1)
+	}
+
+	service := &Service{srv}
+	status, err := service.Manage()
 	if err != nil {
 		fmt.Println(status, "\nError: ", err)
 		os.Exit(1)

@@ -5,7 +5,7 @@ package etcdadminpb;
 option go_package = ".;etcdadminpb";
 
 service GrpcEtcdAdmin{
-    // call for private
+    // Call for private only
     rpc GrpcManagerEtcd(ManagerEtcdRequest) returns (ManagerEtcdReply) {}
 
     rpc GrpcAddMember(AddMemberRequest) returns (AddMemberReply) {}
