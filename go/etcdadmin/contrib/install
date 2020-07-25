@@ -10,6 +10,8 @@ if [ x"$1" == x"uninstall" ]; then
         rm -f ${sysdir}/etcdadmind.service
         systemctl daemon-reload
     fi
+    [ -e /usr/bin/etcdadmind ] && rm -f /usr/bin/etcdadmind
+    command -v etcdadmind && which etcdadmind | xargs rm -f || :
     exit 0
 fi
 
@@ -39,6 +41,8 @@ fi
 
 # link etcdadmind to /usr/bin/etcdadmind and install etcdadmind.service
 if command -v etcdadmind >/dev/null 2>&1; then
+    systemctl stop etcdadmind.service || :
+
     binpath=$(which etcdadmind 2>/dev/null)
     if [ -n "$binpath" ] && [ -e "$binpath" ]; then
         if [ x"$binpath" != x"/usr/bin/etcdadmind" ]; then

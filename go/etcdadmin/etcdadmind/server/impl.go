@@ -20,7 +20,7 @@ func (imp *ImplEtcdAdminServer) GrpcAddMember(
 
 	imp.logger.Info(fmt.Sprintf("call GrpcAddMember: %v", req))
 
-	imp.drv.AddMember(req.Members)
+	imp.drv.AddMember(req.Member)
 
 	return &pb.AddMemberReply{Errcode: pb.Retcode_OK}, nil
 }

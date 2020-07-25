@@ -19,7 +19,7 @@ const (
 )
 
 type GrpcClient struct {
-	caller pb.GrpcEtcdAdminClient
+	remote pb.GrpcEtcdAdminClient
 	conn   *grpc.ClientConn
 	ip     string
 	port   string
@@ -41,7 +41,7 @@ func New(ip string, port string) *GrpcClient {
 		return c
 	}
 	c.conn = conn
-	c.caller = pb.NewGrpcEtcdAdminClient(conn)
+	c.remote = pb.NewGrpcEtcdAdminClient(conn)
 
 	return c
 }
@@ -75,7 +75,7 @@ func (c *GrpcClient) GrpcClientManagerEtcd(cfg map[string]string, clearwal bool,
 		etcdCmd = pb.EtcdCmd_NONE
 	}
 
-	r, err := c.caller.GrpcManagerEtcd(context.Background(),
+	r, err := c.remote.GrpcManagerEtcd(context.Background(),
 		&pb.ManagerEtcdRequest{Cmd: etcdCmd, Clearwal: clearwal, Cfgs: cfgs})
 
 	return r, err

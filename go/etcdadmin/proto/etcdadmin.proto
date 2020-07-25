@@ -39,7 +39,7 @@ message AddMemberRequest {
         string name = 1;
         string ip = 2;
     }
-    repeated Member members = 1;
+    Member member = 1;
 }
 
 message AddMemberReply {

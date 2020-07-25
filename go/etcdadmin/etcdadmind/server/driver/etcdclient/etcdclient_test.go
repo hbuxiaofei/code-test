@@ -1,9 +1,9 @@
 package etcdclient
 
 import (
+	"fmt"
 	"os"
 	"testing"
-	"fmt"
 )
 
 const (

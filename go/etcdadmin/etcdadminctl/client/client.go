@@ -38,11 +38,10 @@ func Release(c *GrpcClient) error {
 }
 
 func (c *GrpcClient) GrpcClientAddmember(name string, ip string) {
-	member := pb.AddMemberRequest_Member{Name: name, Ip: ip}
-	members := []*pb.AddMemberRequest_Member{&member}
+	m := &pb.AddMemberRequest_Member{Name: name, Ip: ip}
 
 	r, err := c.caller.GrpcAddMember(context.Background(),
-		&pb.AddMemberRequest{Members: members})
+		&pb.AddMemberRequest{Member: m})
 
 	if err == nil {
 		fmt.Printf("%v \n", r.Errcode)
