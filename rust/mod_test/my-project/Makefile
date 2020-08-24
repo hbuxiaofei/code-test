@@ -1,5 +1,17 @@
-all:
+all:build run
+
+build:
 	cargo build
 
+run:
+	cargo run
+
+test:
+	cargo test
+
+test-all:
+	make -C restaurant test
+	cargo test
+
 clean:
-	rm -rf target
+	find ./ -name target -type d | xargs rm -rf
