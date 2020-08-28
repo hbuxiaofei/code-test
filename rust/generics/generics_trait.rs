@@ -1,6 +1,23 @@
+// 定义结构体
 struct Student {
     grade: String,
     class: String,
+}
+// 结构体方法实现
+impl Student {
+    // 使用new方法创建结构体
+    // fn new(grade: String, class: String) -> Student {
+    fn new(grade: String, class: String) -> Self {  // 返回值Student可用Self代替
+        Student {
+            grade: grade,
+            class: class,
+        }
+    }
+
+    fn show(&self) {
+        println!("1> My grade is: {}", self.grade);
+        println!("1> My class is: {}", self.class);
+    }
 }
 
 
@@ -9,7 +26,7 @@ trait ShowClass {
 }
 impl ShowClass for Student {
     fn show_class(&self) {
-        println!("My class is: {}", self.class);
+        println!("2> My class is: {}", self.class);
     }
 }
 
@@ -19,7 +36,7 @@ trait ShowGrade {
 }
 impl ShowGrade for Student {
     fn show_grade(&self) {
-        println!("My grade is: {}", self.grade);
+        println!("2> My grade is: {}", self.grade);
     }
 }
 
@@ -32,8 +49,8 @@ impl<T> ShowProperty for T
     where T:ShowClass + ShowGrade
 {
     fn show_property(&self) {
-        self.show_class();
         self.show_grade();
+        self.show_class();
     }
 }
 
@@ -42,7 +59,11 @@ fn main() {
     // let st = Student{class: String::from("class1")};
     // st.show_class();
 
-    let st = Student{class: String::from("two"), grade: String::from("one")};
-    st.show_property();
+    let st = Student::new(String::from("grade2"),
+                          String::from("class1"));
+    st.show();
 
+    println!("");
+
+    st.show_property();
 }
