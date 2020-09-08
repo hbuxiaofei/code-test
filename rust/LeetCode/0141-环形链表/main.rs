@@ -53,67 +53,152 @@
 // 定是因为链表不存在环。
 //
 
-#[derive(Hash, Eq, PartialEq, Debug, Clone)]
+use std::ptr;
+
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct ListNode {
-    pub val: i32,
-    pub next: Option<Box<ListNode>>,
+    val: i32,
+    next: *mut ListNode,
 }
 
 impl ListNode {
-    #[inline]
-    fn new(val: i32) -> Self {
-        ListNode { next: None, val }
+    pub fn new(val: i32) -> Self {
+        let node = ListNode {
+            val,
+            next: ptr::null_mut(),
+        };
+
+        node
+    }
+
+    pub fn set_next(&mut self, new: *mut ListNode) -> &mut ListNode {
+        unsafe {
+            (*self).next = new;
+            &mut *new
+        }
+    }
+
+    pub fn get_next(&self) -> &mut ListNode {
+        return unsafe { &mut *self.next };
+    }
+
+    pub fn as_ptr(&self) -> *mut ListNode {
+        self as *const _ as *mut _
+    }
+
+    pub fn value(&self) -> &i32 {
+        &self.val
     }
 }
 
 struct Solution {}
 
 impl Solution {
-    pub fn has_cycle(head: Option<Box<ListNode>>) -> bool {
-        let mut fast_p = &head;
-        let mut slow_p = &head;
+    pub fn has_cycle(head: &mut ListNode) -> bool {
+        let mut fast_p = &*head;
+        let mut slow_p = &*head;
 
-        while fast_p.is_some() && fast_p.as_ref().unwrap().next.is_some() {
-            slow_p = &slow_p.as_ref().unwrap().next;
-            fast_p = &fast_p.as_ref().unwrap().next.as_ref().unwrap().next;
+        while !fast_p.as_ptr().is_null() && !fast_p.get_next().as_ptr().is_null() {
+            slow_p = slow_p.get_next();
+            fast_p = fast_p.get_next().get_next();
 
-            if slow_p == fast_p {
+            if slow_p.as_ptr() == fast_p.as_ptr() {
                 return true;
             }
         }
+
         false
     }
 }
 
-fn case_ok() {
-    let mut node = ListNode::new(1);
-    let mut list_input = ListNode::new(2);
-    list_input.next = Some(Box::new(node));
-    node = list_input;
-    list_input = ListNode::new(3);
-    list_input.next = Some(Box::new(node));
+fn show_list(head: &mut ListNode) {
+    let mut n = head;
+    let max = 10; // 最多显示10个节点，防止链表有环，形成死循环输出
+    let mut i = 0;
+    while n.as_ptr() != ptr::null_mut() {
+        print!("{:?} ", n.value());
+        n = n.get_next();
 
-    let result = Solution::has_cycle(Some(Box::new(list_input)));
+        i += 1;
+        if i > max {
+            break;
+        }
+    }
+    print!("\n");
+}
+
+fn case_ok1() {
+    let node1 = &mut ListNode::new(1);
+
+    print!("[has_cycle] list: ");
+    show_list(node1);
+
+    let result = Solution::has_cycle(node1);
+    println!("[has_cycle] Solution result: {:?}", result);
+    assert_eq!(result, false);
+}
+
+fn case_ok2() {
+    let node3 = &mut ListNode::new(3);
+    let node2 = &mut ListNode::new(2);
+    let node0 = &mut ListNode::new(0);
+    let node_4 = &mut ListNode::new(-4);
+
+    node3.set_next(node2); // node(3) -> node(2)
+    node2.set_next(node0); // node(3) -> node(2) -> node(0)
+    node0.set_next(node_4); // node(3) -> node(2) -> node(0) -> node(-4)
+
+    print!("[has_cycle] list: ");
+    show_list(node3);
+
+    let result = Solution::has_cycle(node3);
     println!("[has_cycle] Solution result: {:?}", result);
     assert_eq!(result, false);
 }
 
 fn case_bad1() {
-    let mut node = ListNode::new(-4);
+    let node3 = &mut ListNode::new(3);
+    let node2 = &mut ListNode::new(2);
+    let node0 = &mut ListNode::new(0);
+    let node_4 = &mut ListNode::new(-4);
 
-    let mut list_input = ListNode::new(0);
-    list_input.next = Some(Box::new(node));
+    node3.set_next(node2); // node(3) -> node(2)
+    node2.set_next(node0); // node(3) -> node(2) -> node(0)
+    node0.set_next(node_4); // node(3) -> node(2) -> node(0) -> node(-4)
+    node_4.set_next(node2); // node(3) -> node(2) -> node(0) -> node(-4)
+                            //              ^                     |
+                            //              |                     |
+                            //              +---------------------+
 
-    node = list_input;
-    list_input = ListNode::new(2);
-    list_input.next = Some(Box::new(node));
+    print!("[has_cycle] list: ");
+    show_list(node3);
 
-    let result = Solution::has_cycle(Some(Box::new(list_input)));
+    let result = Solution::has_cycle(node3);
     println!("[has_cycle] Solution result: {:?}", result);
-    assert_eq!(result, false);
+    assert_eq!(result, true);
+}
+
+fn case_bad2() {
+    let node1 = &mut ListNode::new(1);
+    let node2 = &mut ListNode::new(2);
+
+    node1.set_next(node2); // node(1) -> node(2)
+    node2.set_next(node1); // node(1) -> node(2)
+                           //   ^          |
+                           //   |          |
+                           //   +----------+
+
+    print!("[has_cycle] list: ");
+    show_list(node1);
+
+    let result = Solution::has_cycle(node1);
+    println!("[has_cycle] Solution result: {:?}", result);
+    assert_eq!(result, true);
 }
 
 fn main() {
-    case_ok();
+    case_ok1();
+    case_ok2();
     case_bad1();
+    case_bad2();
 }
