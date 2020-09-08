@@ -1,5 +1,5 @@
 OBJ = a.out
-SRC = ./extend.rs
+SRC = ./main.rs
 
 all: ${OBJ}
 

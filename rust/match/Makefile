@@ -1,5 +1,5 @@
 OBJ=a.out
-SRC=fileopen.rs
+SRC=./if_let.rs
 
 
 all: ${OBJ}
