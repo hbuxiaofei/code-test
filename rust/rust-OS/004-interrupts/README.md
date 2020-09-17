@@ -6,6 +6,7 @@ References:
 [blog_os](https://github.com/phil-opp/blog_os)
 [writing-an-os-in-rust](https://github.com/rustcc/writing-an-os-in-rust)
 
+
 ## Requires
 To create a bootable disk image from the compiled kernel, you need to install the [`bootimage`] tool:
 ```
