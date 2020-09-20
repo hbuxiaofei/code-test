@@ -20,72 +20,66 @@
 //
 //
 // ## 思路
-// 采用双指针方法操作比较简单：
-// 1. 定义一个保存最大长度变量max,两个移动的变量i,j和另外一个保存不重复字符串的
-// 变量seq_tmp
-// 2. 对给定的字符串s进行遍历，然后判断seq_tmp是否包含当前的字符，如果不包含
-// 则j++,同时把当前的字符拼接到seq_tmp中，如果包含则i++,把当前循环的变量j重新
-// 赋值为i,把当前保存的seq_tmp=""
-// 3. 把max中的值与seq_tmp的长度进行比较，如果len(seq_tmp)>max则：max=len(seq_tmp)
-// 4. 返回 max值即为所求
+// 滑动窗口
 //
 
-struct Solution();
+struct Solution {}
 
 impl Solution {
-    pub fn length_of_logest_substring(&self, s: String) -> i32 {
-        let seq: Vec<char> = s.chars().collect();
+    pub fn length_of_longest_substring(s: String) -> i32 {
         let mut max = 0;
-        for i in 0..seq.len() {
-            let mut seq_tmp: Vec<char> = vec![];
-            for j in i..seq.len() {
-                if self.index_str(seq[j], seq_tmp.clone()) == -1 {
-                    seq_tmp.push(seq[j]);
-                    if seq_tmp.len() > max {
-                        max = seq_tmp.len();
+        let mut seq_tmp: Vec<char> = vec![];
+        for (_, ch) in s.chars().enumerate() {
+            if seq_tmp.contains(&ch) {
+                while !seq_tmp.is_empty() {
+                    if seq_tmp.remove(0) == ch {
+                        break;
                     }
-                } else {
-                    break;
                 }
+            }
+            seq_tmp.push(ch);
+            if seq_tmp.len() > max {
+                max = seq_tmp.len();
             }
         }
         max as i32
     }
-
-    fn index_str(&self, c: char, vec: Vec<char>) -> i32 {
-        for i in 0..vec.len() {
-            if vec[i] == c {
-                return i as i32;
-            }
-        }
-        -1
-    }
 }
 
 fn main() {
-    let s = Solution {};
-
     let test_str = String::from("abcabcbb");
     let result_ok = 3;
-    let result = s.length_of_logest_substring(test_str);
-    println!("[length_of_logest_substring] Solution result: {:?}", result);
+    let result = Solution::length_of_longest_substring(test_str);
+    println!(
+        "[length_of_longest_substring] Solution result: {:?}",
+        result
+    );
     assert_eq!(result, result_ok);
 
     let test_str = String::from("bbbbb");
     let result_ok = 1;
-    let result = s.length_of_logest_substring(test_str);
-    println!("[length_of_logest_substring] Solution result: {:?}", result);
-    assert_eq!(result, result_ok);
-
-    let test_str = String::from("pwwkew");
-    let result_ok = 3;
-    let result = s.length_of_logest_substring(test_str);
-    println!("[length_of_logest_substring] Solution result: {:?}", result);
+    let result = Solution::length_of_longest_substring(test_str);
+    println!(
+        "[length_of_longest_substring] Solution result: {:?}",
+        result
+    );
     assert_eq!(result, result_ok);
 
     let test_str = String::from("abcab12345");
     let result_ok = 8;
-    let result = s.length_of_logest_substring(test_str);
-    println!("[length_of_logest_substring] Solution result: {:?}", result);
+    let result = Solution::length_of_longest_substring(test_str);
+    println!(
+        "[length_of_longest_substring] Solution result: {:?}",
+        result
+    );
+    assert_eq!(result, result_ok);
+
+    let test_str = String::from("pwwkew");
+    let result_ok = 3;
+    let result = Solution::length_of_longest_substring(test_str);
+    println!(
+        "[length_of_longest_substring] Solution result: {:?}",
+        result
+    );
     assert_eq!(result, result_ok);
 }
