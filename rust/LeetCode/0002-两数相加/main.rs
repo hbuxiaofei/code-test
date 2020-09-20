@@ -35,40 +35,51 @@ impl Solution {
         l1: Option<Box<ListNode>>,
         l2: Option<Box<ListNode>>,
     ) -> Option<Box<ListNode>> {
-        let mut dummy1 = l1;
-        let mut dummy2 = l2;
-        let mut root = Some(Box::new(ListNode::new(0)));
-        let mut curr = &mut root;
+        let mut list1 = l1;
+        let mut list2 = l2;
+        let mut ret = Some(Box::new(ListNode::new(0)));
+        let mut index = &mut ret;
+
         let mut carry = 0;
+        loop {
+            let mut is_match = false;
+            let mut val1 = 0;
+            let mut val2 = 0;
+            if let Some(n1) = list1{
+                val1 = n1.val;
+                is_match = true;
+                list1 = n1.next;
+            }
 
-        while dummy1.is_some() || dummy2.is_some() {
-            match curr {
-                Some(inner_node) => {
-                    let first = dummy1.take().unwrap_or(Box::new(ListNode::new(0)));
-                    let second = dummy2.take().unwrap_or(Box::new(ListNode::new(0)));
-                    let mut sum = first.val + second.val + carry;
-                    carry = sum / 10;
-                    sum = sum % 10;
-                    inner_node.next.get_or_insert(Box::new(ListNode::new(sum)));
-                    curr = &mut inner_node.next;
-                    dummy1 = first.next;
-                    dummy2 = second.next;
+            if let Some(n2) = list2{
+                val2 = n2.val;
+                is_match = true;
+                list2 = n2.next;
+            }
+
+            if is_match == true || carry != 0 {
+                let mut sum = val1 + val2 + carry;
+                carry = sum / 10;
+                sum = sum % 10;
+
+                if let Some(n) = index {
+                   n.next = Some(Box::new(ListNode::new(sum)));
+                   index = &mut n.next;
                 }
-                None => break,
+            } else {
+                break;
             }
         }
 
-        if carry == 1 {
-            if let Some(node) = curr {
-                node.next.get_or_insert(Box::new(ListNode::new(1)));
-            }
+        if let Some(n) = ret {
+            return n.next;
         }
 
-        root.unwrap().next
+        ret
     }
 }
 
-fn main() {
+fn case1() {
     let mut node = ListNode::new(1);
     let mut list1 = ListNode::new(2);
     list1.next = Some(Box::new(node));
@@ -83,10 +94,42 @@ fn main() {
     list2 = ListNode::new(1);
     list2.next = Some(Box::new(node));
 
-    println!("[has_cycle] Solution result: {:?}", list1);
-    println!("[has_cycle] Solution result: {:?}", list2);
+    let result = Solution::add_two_numbers(Some(Box::new(list1)), Some(Box::new(list2)));
+
+    println!("[has_cycle] Solution result: {:?}", result);
+}
+
+fn case2() {
+    let mut node = ListNode::new(2);
+    let mut list1 = ListNode::new(4);
+    list1.next = Some(Box::new(node));
+    node = list1;
+    list1 = ListNode::new(3);
+    list1.next = Some(Box::new(node));
+
+    node = ListNode::new(5);
+    let mut list2 = ListNode::new(6);
+    list2.next = Some(Box::new(node));
+    node = list2;
+    list2 = ListNode::new(4);
+    list2.next = Some(Box::new(node));
 
     let result = Solution::add_two_numbers(Some(Box::new(list1)), Some(Box::new(list2)));
 
     println!("[has_cycle] Solution result: {:?}", result);
+}
+
+fn case3() {
+    let list1 = ListNode::new(5);
+    let list2 = ListNode::new(5);
+
+    let result = Solution::add_two_numbers(Some(Box::new(list1)), Some(Box::new(list2)));
+
+    println!("[has_cycle] Solution result: {:?}", result);
+}
+
+fn main() {
+    case1();
+    case2();
+    case3();
 }
