@@ -6,7 +6,7 @@
 # 而常量的创建可以通过 const 和 static 关键字来创建。
 
 
-NAME=constants
+NAME=scope_freeze
 
 all: build test clean
 
