@@ -1,4 +1,4 @@
-NAME=match
+NAME=pointer_ref
 
 all: build test clean
 
