@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "submodule.h"
+#include "submodule2.h"
 
 void __attribute__((constructor)) init(void)
 {
@@ -15,5 +16,6 @@ int main()
 {
     printf("Hello world!\n");
     submodule_run();
+    /* submodule2_run(); */
     return 0;
 }
