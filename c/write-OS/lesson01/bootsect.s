@@ -27,7 +27,7 @@ _start:
 	mov %ax, %es			# 设置好 es 寄存器，为后续输出字符串准备
 	mov	$0x03, %ah			# 在输出我们的信息前读取光标的位置, 会将光标当前所在行/列存储在DX里（DH为行, DL为列）
 	xor	%bh, %bh			# 异或自己，实现 bh 清零
-	int	$0x10
+	int	$0x10               # BIOS 中断INT 0x10 显示字符和字符串
 
 	mov	$18, %cx			# Set the output length
 	mov	$0x0007, %bx		# page 0, attribute 7 (normal) 设置必要的属性
