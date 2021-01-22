@@ -11,17 +11,15 @@
 [ -d  bootimage ] && rm -rf bootimage
 mkdir bootimage
 
-cp -f bootsect.s bootimage/
-cp -f binary.s bootimage/
-cp -f setup.s bootimage/
+cp -f bootimg bootimage/
 cp -f Makefile bootimage/
+cp -f Makefile.header bootimage/
 
 lftp <<EOF
 open ftp://wwftp:wwftp@192.168.1.252
-mv /lilei/rinux/binary.s /lilei/rinux/1
-mv /lilei/rinux/setup.s /lilei/rinux/1
-mv /lilei/rinux/bootsect.s /lilei/rinux/1
+mv /lilei/rinux/bootimg /lilei/rinux/1
 mv /lilei/rinux/Makefile /lilei/rinux/1
+mv /lilei/rinux/Makefile.header /lilei/rinux/1
 close
 bye
 EOF
@@ -34,7 +32,6 @@ bye
 EOF
 
 [ -d  bootimage ] && rm -rf bootimage
-make clean
 
 exit 0
 

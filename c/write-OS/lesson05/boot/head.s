@@ -7,11 +7,13 @@
 .text
 
 .global idt, gdt, pg_dir, tmp_floppy_area
-pg_dir:						# 这里说明pg_dir要写在这里，最后会覆盖掉startup code
+pg_dir:						# 这里说明pg_dir 页目录要写在这里，最后会覆盖掉startup code
 .global startup_32
 
 startup_32:
-	movl $0x10, %eax
+	movl $0x10, %eax		# 这里已经处于32位模式，因此这里的$0x010并不是把地址0x10装入各个段寄存器
+							# 这里$0x10的含义是请求特权级0(位0-1=0), 选择全局表述符表(位2=0),
+							# 选择表中第2项(位3-15:2)
 	mov %ax, %ds
 	mov %ax, %es
 	mov %ax, %fs
@@ -59,7 +61,7 @@ check_x87:
 setup_idt:
 	# We fill all the IDT entries with a default entry
 	# that will display a message when any interrupt is triggered
-	
+
 	lea ignore_int, %edx
 	movl $0x00080000, %eax
 	movw %dx, %ax
@@ -102,7 +104,8 @@ after_page_tables:
 	push $0
 	push $0
 	pushl $L6
-	pushl $_main
+	pushl $main
+	jmp setup_paging
 L6:
 	jmp L6
 
@@ -125,8 +128,8 @@ ignore_int:
 	mov %ax, %es
 	mov %ax, %fs
 	pushl $int_msg
-	call _printk
-	
+	call printk
+
 	popl %eax
 	pop %fs
 	pop %es
@@ -141,14 +144,14 @@ setup_paging:
 	movl $1024 * 5, %ecx		# We have 5 pages (one page pg_dir + 4 pages)
 	xorl %eax, %eax
 	xorl %edi, %edi
-	cld;rep;stosl				
-	
+	cld;rep;stosl
+
 	# Setup Page Directory(Only 4)
 	movl $pg0+7, pg_dir			# +7 Means set attribute present bit, r/w user
 	movl $pg1+7, pg_dir+4		# -- -- ---
 	movl $pg2+7, pg_dir+8		# -- -- ---
 	movl $pg3+7, pg_dir+12		# -- -- ---
-	
+
 	# Then we fill the rest of the page table
 	# We mapped the highest linear address to Phy Address 16MB
 	movl $pg3 + 4092, %edi
@@ -179,9 +182,14 @@ idt_descr:
 .align 2
 .word 0
 
+
+
 gdt_descr:
 	.word 256*8 - 1
 	.long gdt
+	.align 8
+
+idt:  .fill 256, 8, 0		# Forget to set IDT at first QAQ
 
 gdt:
 	# Empty Entry (FIRST ENTRY)
