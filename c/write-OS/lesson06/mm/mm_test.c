@@ -35,6 +35,11 @@ unsigned long *linear_to_pte(unsigned long addr) {
     // get the Page Directory Entry first
     // This variable will be used to refer to pte later
     // (for saving memory XD)
+    //
+    //  31 - 22    21 - 12  11 - 0
+    //  Directory  Table    Offset
+    //  32位系统中, 内存地址4字节对齐, 因此 Directory = (addr >> 22) * 4 = addr >> 20
+    //
     unsigned long *pde = (unsigned long *)((addr >> 20) & 0xffc);
     // Page dir not exist
     // Or the address is not inside the page table address range(<=4KB)
@@ -113,6 +118,8 @@ int mmtest_main(void) {
     x = 0xdad233;
     // DO not modify this code
     // Here will disable WP bit (temporarily)
+    // WP：对于Intel 80486或以上的CPU，CR0的位16是写保护（Write Proctect）标志。
+    // 当设置该标志时，处理器会禁止超级用户程序（例如特权级0的程序）向用户级只读页面执行写操作
     asm volatile("mov %%cr0, %%eax\n\t"
             "orl $0x00010000, %%eax\n\t"
             "mov %%eax, %%cr0\n\t"

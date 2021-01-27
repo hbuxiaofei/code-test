@@ -192,8 +192,11 @@ gdt_descr:
 idt:  .fill 256, 8, 0		# Forget to set IDT at first QAQ
 
 gdt:
+	/* NULL descriptor */
 	# Empty Entry (FIRST ENTRY)
 	.quad 0x0000000000000000
+
+	/* 16Mb */
 	# BaseAddress = 0x00000000
 	# Limit = 0xfff
 	# Granularity = 1 means 4KB Segment limit are 4KB unit
@@ -201,6 +204,8 @@ gdt:
 	# DPL = 0x00 S = 1 P = 1
 	# Code Segment
 	.quad 0x00c09a0000000fff
+
+	/* 16Mb */
 	# BaseAddress = 0x00000000
 	# Limit = 0xfff
 	# Granularity = 1 means 4KB Segment limit are 4KB unit
@@ -208,7 +213,10 @@ gdt:
 	# DPL = 0x00 S = 1 P = 1
 	# Data Segment
 	.quad 0x00c0920000000fff
+
+	/* TEMPORARY - don't use */
 	# Temporaray
 	.quad 0x0000000000000000
-	.fill 252, 8, 0
 
+	/* space for LDT's and TSS's etc */
+	.fill 252, 8, 0

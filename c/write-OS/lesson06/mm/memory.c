@@ -37,14 +37,14 @@ static inline void oom() {
 // >>12 = /4KB(一页的大小)
 //
 void mem_init(unsigned long start_mem, unsigned long end_mem) {
-    int i;
+    unsigned long i;
     HIGH_MEMORY = end_mem;      // 物理内存最高处为 end_mem
     for(i = 0; i < PAGING_PAGES; i++)
         mem_map[i] = USED;      // 除了start_mem ~ end_mem 的区域物理页都应该为被占用状态
 
-    i = MAP_NR(start_mem);
+    i = (unsigned long)MAP_NR(start_mem);
     end_mem -= start_mem;
-    end_mem >> 12;              // 计算多少页需要设置为free
+    end_mem >>= 12;              // 计算多少页需要设置为free
     while(end_mem-->0) {
         mem_map[i++] = 0;
     }
@@ -59,7 +59,7 @@ void calc_mem(void) {
     for(i = 0; i < PAGING_PAGES; i++)
         if(!mem_map[i]) free++;
     printk("%d pages free (of %d in total)\n", free, PAGING_PAGES);
-    
+
     // 遍历除了页表页目录的其余页表项, 如果页面有效, 则统计有效页面数量
     for(i = 2; i < 1024; i++) {
         if(pg_dir[i] & 1) {     // 先检查 Dir 是否存在
@@ -70,7 +70,7 @@ void calc_mem(void) {
                 }
             }
             printk("PageDir[%d] uses %d pages\n", i, k);
-        } 
+        }
     }
     return ;
 }
@@ -102,7 +102,7 @@ unsigned long get_free_page(void) {
 // 就是将mem_map中相应的byte置0,以及做一些必要的error_check
 // 包括是否访问了内核内存,还有是否超出了物理内存(16MB)边界
 void free_page(unsigned long addr) {
-    if(addr < LOW_MEM) return ;      // 决不允许操作物理内存低端 
+    if(addr < LOW_MEM) return ;      // 决不允许操作物理内存低端
     if(addr >= HIGH_MEMORY) return ; // 也不能超过可用内存高端
 
     addr = MAP_NR(addr);        // 计算出需要的页号
@@ -152,7 +152,7 @@ int free_page_tables(unsigned long from, unsigned long size) {
 // 参数 page 为页面的物理地址 address 为线性地址
 unsigned long put_page(unsigned long page, unsigned long address) {
     unsigned long *pg_tbl, tmp;
-    
+
     if(page < LOW_MEM || page >= HIGH_MEMORY)
         printk("Trying to put page %x at %x\n", page, address);
     // mem_map 中此页为unset状态
