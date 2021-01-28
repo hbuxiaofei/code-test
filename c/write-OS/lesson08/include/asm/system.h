@@ -3,8 +3,8 @@
  *
  */
 
-#define sti()  __asm__ volatile ("sti"::)
-#define cli()  __asm__ volatile ("cli"::)
+#define sti()  __asm__ volatile ("sti"::) // 开中断
+#define cli()  __asm__ volatile ("cli"::) // 关中断
 #define nop()  __asm__ volatile ("nop"::)
 #define iret() __asm__ volatile ("iret"::)
 

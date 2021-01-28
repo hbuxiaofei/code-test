@@ -39,9 +39,9 @@ static void die(char *str, long esp_ptr, long nr) {
     long *esp = (long *)esp_ptr;
     printk("%s: %x", str, nr & 0xffff);
     printk("EIP: %x:%x\n EFLAGS: %x\n ESP %x:%x\n",
-            esp[0], esp[1], esp[2], esp[4], esp[3]);
+            esp[1], esp[0], esp[2], esp[4], esp[3]);
     // Some Process Related code, now stub
-    
+
     printk("No Process now, System HALT!   :(\n");
     for(;;);
     return ;
@@ -63,11 +63,11 @@ void do_int3(long *esp, long error_code,
         long fs, long es, long ds,
         long ebp, long esi, long edi,
         long edx, long ecx, long ebx, long eax) {
-    
+
     // Now we do not support Task Register
     int tr = 0;
     __asm__ volatile("str %%ax":"=a" (tr):"0"(0));
-    
+
     printk("eax\tebx\tecx\tedx\t\n%x\t%x\t%x\t%x\n",eax, ebx, ecx, edx);
     printk("esi\tedi\tebp\tesp\t\n%x\t%x\t%x\t%x\n",esi, edi, ebp, (long)esp);
     printk("ds\tes\tfs\ttr\n%x\t%x\t%x\t%x\n",ds, es, fs, tr);

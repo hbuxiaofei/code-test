@@ -17,6 +17,7 @@
 .global general_protection, coprocessor_error, irq13, reserved
 # 这两个是STUB的,之后会在system_call.s中实现
 .global corprocessor_error, parallel_interrupt, device_not_available
+.global demo_timer_interrupt
 
 # 先处理无 error code 压栈的情况
 # 相关中断有: 除零(Fault) 调试debug(Fault) nmi(Trap) 断点指令(Trap)
@@ -38,7 +39,7 @@ no_error_code:
 	pushl $0						# error code = 0
 	lea 44(%esp), %edx				# 栈的地址由高地址向低地址生长，因而这里是去向栈底寻址
 									# 我们刚刚 push 了 11 个参数，现在将指针回退到中断返回地址
-									# 这一参数所在的栈指针位置, 并将地址放入 %edx 
+									# 这一参数所在的栈指针位置, 并将地址放入 %edx
 	pushl %edx
 	movl $0x10, %edx				# 初始化ds, es, fs加载为内核数据段选择符
 	mov %dx, %ds
@@ -119,7 +120,7 @@ irq13:
 
 # Double Fault, 类型 Abort 有出错码
 # 当CPU在调用一个异常处理程序的时候又检测到另一个异常，而且这两个异常无法被串行处理
-# 
+#
 double_fault:
 	pushl $do_double_fault
 error_code:
@@ -159,7 +160,7 @@ invalid_TSS:
 	pushl $do_invalid_TSS
 	jmp error_code
 
-# int11 段不存在 类型 Fault 
+# int11 段不存在 类型 Fault
 segment_not_present:
 	pushl $do_segment_not_present
 	jmp error_code
@@ -186,6 +187,10 @@ parallel_interrupt:
 device_not_available:
 	pushl $do_stub
 	jmp error_code
+
+demo_timer_interrupt:
+	pushl $do_timer
+	jmp no_error_code
 
 # int7 设备不存在 将在 kernel/system_call.s 中实现
 # int14 页错误 将在 mm/page.s 中实现
