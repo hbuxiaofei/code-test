@@ -40,7 +40,7 @@ struct i387_struct {
     long foo;       // 内存offset
     long fos;       // 内存段
     long st_space[20];      // 8个10字节的协处理器累加器
-}
+};
 
 // 这里是和TSS结构对应的，要注意变量的顺序，具体参考Intel手册
 // 还包含了 i387 协处理器的结构
@@ -69,7 +69,7 @@ struct tss_struct {
     long ldt;
     long bitmap;
     struct i387_struct i387;
-}
+};
 
 // 进程描述符结构
 struct task_struct {
@@ -77,12 +77,12 @@ struct task_struct {
     long state;
     long counter;       // 时间片计数器
     long priority;      // 优先级
-    // 信号相关结构，分别为信号集，响应信号的行为，屏蔽的信号集 
+    // 信号相关结构，分别为信号集，响应信号的行为，屏蔽的信号集
     long signal;
     struct sigaction sigaction[32];
     long blocked;
     // --- 硬编码部分结束 ---
-    int exit_code;      // 其父进程会读取该任务的 exit_code 
+    int exit_code;      // 其父进程会读取该任务的 exit_code
     unsigned long start_code;
     unsigned long end_code;
     unsigned long end_data;
@@ -117,7 +117,7 @@ struct task_struct {
     // struct file * filp[NR_OPEN];
     struct desc_struct ldt[3];      // LDT 第一项为空， 第二项是代码段，第三项是数据段（也是堆栈段)
     struct tss_struct tss;          // 该进程的TSS结构
-}
+};
 
 #define INIT_TASK \
 /* state info */ {0, 15, 15, \
@@ -143,14 +143,14 @@ struct task_struct {
 extern struct task_struct *task[NR_TASKS];
 extern struct task_struct *last_task_used_math;
 extern struct task_struct *current;
-extern long volatile jiffies
+extern long volatile jiffies;
 extern long start_time;
 
-#define CURRENT_TIME(start_time + jiffies / HZ)
+#define CURRENT_TIME (start_time + jiffies / HZ)
 
 extern void add_timer(long *jiffies, void(*fn)(void));
 extern void sleep_on(struct task_struct **p);
-extern void interruptible_sleep_on(sturct task_struct **p);
+extern void interruptible_sleep_on(struct task_struct **p);
 extern void wake_up(struct task_struct **p);
 
 #define FIRST_TSS_ENTRY 4
