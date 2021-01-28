@@ -1,0 +1,11 @@
+AS=as --32
+
+CC=gcc -m32 -nostdlib -fno-builtin
+
+LD=ld
+LDFLAGS = -m elf_i386
+
+OBJCOPY=objcopy
+STRIP=strip
+
+QEMU=/usr/libexec/qemu-kvm

@@ -105,7 +105,7 @@ int mmtest_main(void) {
     // (Hint: add a table entry map to physical address 3MB)
     //
     printk("2. Put page(0x300000) at linear address 0xdad233\n");
-    put_page(0x300000, 0xdad233);
+    //put_page(0x300000, 0xdad233);
 
     unsigned long *x = 0xdad233;
     *x = 0x23333333;
