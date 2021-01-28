@@ -1,10 +1,13 @@
 #include <linux/sched.h>
 #include <linux/kernel.h>
 #include <linux/mm.h>
+#include <linux/sys.h>
 #include <asm/system.h>
 #include <asm/io.h>
+#include <serial_debug.h>
 
 extern int timer_interrupt(void);
+extern int system_call(void);
 
 union task_union {
     struct task_struct task;
@@ -70,7 +73,21 @@ void schedule(void) {
         }
     }
     // switch_to 接收参数为一个 Task 号
+    // show_task_info(task[next]);
+    // s_printk("Scheduler select task %d\n", next);
     switch_to(next)
+}
+
+void show_task_info(struct task_struct *task) {
+    s_printk("Current task Info\n================\n");
+    s_printk("pid = %d\n", task->state);
+    s_printk("counter = %d\n", task->counter);
+    s_printk("start_code = %x\n", task->start_code);
+    s_printk("end_code = %x\n", task->end_code);
+    s_printk("brk = %x\n", current->ldt[0]);
+    s_printk("gid = 0x%x\n", current->gid);
+    s_printk("tss.ldt = 0x%x\n", current->tss.ldt);
+    // s_printk("tss.eip = 0x%x\n", current->eip);
 }
 
 void wake_up(struct task_struct **p) {
@@ -83,7 +100,7 @@ void wake_up(struct task_struct **p) {
 // 假设我们执行任务A的时候调用了这个函数
 void interruptible_sleep_on(struct task_struct **p) {
     struct task_struct *tmp;
-
+    
     if(!p)
         return;
     if(current == &(init_task.task)) // 我们不能让 init sleep
@@ -92,7 +109,7 @@ void interruptible_sleep_on(struct task_struct **p) {
     *p = current;
 rep_label: current->state = TASK_INTERRUPTIBLE;
     // 这里会转到其他任务去执行
-    schedule();
+    schedule(); 
     // 回来的时候说明，调度程序调度到了这里，current = B
     // 我们要检查队列，如果 *p （这里应该是A) 和 当前运行任务不等
     // 如果不是的话
@@ -158,7 +175,7 @@ void sched_init() {
     __asm__("pushfl; andl $0xffffbfff, (%esp); popfl");
     ltr(0);
     lldt(0);
-
+    
     outb_p(0x43, 0x36);
     outb_p(0x40, divisor & 0xFF);
     outb_p(0x40, divisor >> 8);
@@ -167,5 +184,7 @@ void sched_init() {
     set_intr_gate(0x20, &timer_interrupt);
     // Make 8259 accept timer interrupt
     outb(0x21, inb_p(0x21) & ~0x01);
-    //暂时还不支持system_call
+
+    // 初始化 system_call
+    set_system_gate(0x80, &system_call);
 }

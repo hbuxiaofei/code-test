@@ -39,7 +39,7 @@ bootimg: boot/setup boot/bootsect system
 	@echo "Build bootimg done"
 
 start:
-	$(QEMU) -m 128M -boot a -fda bootimg -vnc 0.0.0.0:1
+	$(QEMU) -m 128M -boot a -fda bootimg -vnc 0.0.0.0:1 -serial stdio
 
 clean:
 	@rm -f bootsect *.o setup *.sym bootimg a.out binary head  system

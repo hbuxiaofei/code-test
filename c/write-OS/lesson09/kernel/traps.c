@@ -4,6 +4,8 @@
  */
 
 #include <linux/head.h>
+#include <linux/sched.h>
+#include <linux/kernel.h>
 #include <asm/io.h>
 #include <asm/system.h>
 
@@ -37,11 +39,12 @@ void parallel_interrupt(void);
 // 停机进入死循环
 static void die(char *str, long esp_ptr, long nr) {
     long *esp = (long *)esp_ptr;
-    printk("%s: %x", str, nr & 0xffff);
-    printk("EIP: %x:%x\n EFLAGS: %x\n ESP %x:%x\n",
+    printk("%s: %x\n", str, nr & 0xffff);
+    printk("EIP: 0x%x:0x%x\n EFLAGS: 0x%x\n ESP 0x%x:0x%x\n",
             esp[1], esp[0], esp[2], esp[4], esp[3]);
     // Some Process Related code, now stub
-
+    printk("base 0x%x, limit 0x%x\n", get_base(current->ldt[1]), get_limit(0x17));
+    
     printk("No Process now, System HALT!   :(\n");
     for(;;);
     return ;
@@ -63,15 +66,16 @@ void do_int3(long *esp, long error_code,
         long fs, long es, long ds,
         long ebp, long esi, long edi,
         long edx, long ecx, long ebx, long eax) {
-
+    
     // Now we do not support Task Register
     int tr = 0;
     __asm__ volatile("str %%ax":"=a" (tr):"0"(0));
-
+    
     printk("eax\tebx\tecx\tedx\t\n%x\t%x\t%x\t%x\n",eax, ebx, ecx, edx);
     printk("esi\tedi\tebp\tesp\t\n%x\t%x\t%x\t%x\n",esi, edi, ebp, (long)esp);
     printk("ds\tes\tfs\ttr\n%x\t%x\t%x\t%x\n",ds, es, fs, tr);
     printk("EIP: %x    CS:%x     EFLAGS: %x", esp[0], esp[1], esp[2]);
+    printk("errno = %d", error_code);
     return ;
 }
 
@@ -124,7 +128,7 @@ void do_reserved(long esp, long error_code) {
 }
 
 void do_stub(long esp, long error_code) {
-    printk("stub interrupt!\n");
+    printk("stub interrupt! %x, %x\n", esp, error_code);
 }
 
 void trap_init(void) {

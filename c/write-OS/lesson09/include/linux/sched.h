@@ -28,6 +28,7 @@
 
 extern int copy_page_tables(unsigned long from, unsigned long to, unsigned long size);
 extern int free_page_tables(unsigned long from, unsigned long size);
+extern void schedule(void);
 
 typedef int (*fn_ptr)();
 
@@ -66,8 +67,8 @@ struct tss_struct {
     long ds;
     long fs;
     long gs;
-    long ldt;
-    long bitmap;
+    unsigned long ldt;
+    unsigned long bitmap;
     struct i387_struct i387;
 };
 
@@ -77,38 +78,41 @@ struct task_struct {
     long state;
     long counter;       // 时间片计数器
     long priority;      // 优先级
-    // 信号相关结构，分别为信号集，响应信号的行为，屏蔽的信号集
+    // 信号相关结构，分别为信号集，响应信号的行为，屏蔽的信号集 
     long signal;
     struct sigaction sigaction[32];
     long blocked;
     // --- 硬编码部分结束 ---
-    int exit_code;      // 其父进程会读取该任务的 exit_code
+    int exit_code;      // 其父进程会读取该任务的 exit_code 
     unsigned long start_code;
     unsigned long end_code;
     unsigned long end_data;
     unsigned long brk;              // 总长度brk
     unsigned long start_stack;      // 堆栈段地址
+
     long pid;                       // pid 进程ID
     long father;                    // 父进程ID
     long pgrp;                      // 进程组ID
     long session;                   // 会话(session)ID
     long leader;                    // 会话(session)的首领
+
     unsigned short uid;             // 用户ID
     unsigned short euid;            // 有效用户ID
     unsigned short suid;            // SetUID
     unsigned short gid;             // 组ID
     unsigned short egid;            // 有效组ID
     unsigned short sgid;            // SetGID
+
     long alarm;                     // 报警定时值 单位: jiffies
     long utime;                     // 用户态运行时间
     long stime;                     // 内核态运行时间
     long cutime;                    // 子进程用户态运行时间
     long cstime;                    // 子进程内核态运行时间
-                                    // 以上时间单位均为 jiffies
     long start_time;                // 进程开始运行的时点
+
     unsigned short used_math;       // 是否使用了协处理器
 
-    int tty;
+    // int tty;
     // 下面是和文件系统相关的变量，暂时不使用，先注释掉
     // unsigned short umask;
     // struct m_inode *pwd;
@@ -120,12 +124,12 @@ struct task_struct {
 };
 
 #define INIT_TASK \
-/* state info */ {0, 15, 15, \
-/* signals */    0, {{}, }, 0, \
-/* exit_code, brk */    0, 0, 0, 0, 0, 0, \
-/* pid */    0, -1, 0, 0, 0, \
-/* uid */    0, 0, 0, 0, 0, 0, \
-/* alarm, etc... */   0, 0, 0, 0, 0, 0, \
+/* state info */ {0,15,15, \
+/* signals */    0,{{},},0, \
+/* exit_code, brk */0,0,0,0,0,0, \
+/* pid */    0,-1,0,0,0, \
+/* uid */    0,0,0,0,0,0, \
+/* alarm, etc... */0,0,0,0,0,0,\
 /* math */    0, \
 /* LDT */    { \
         {0, 0},\
@@ -152,6 +156,7 @@ extern void add_timer(long *jiffies, void(*fn)(void));
 extern void sleep_on(struct task_struct **p);
 extern void interruptible_sleep_on(struct task_struct **p);
 extern void wake_up(struct task_struct **p);
+extern void show_task_info(struct task_struct *task);
 
 #define FIRST_TSS_ENTRY 4
 #define FIRST_LDT_ENTRY (FIRST_TSS_ENTRY+1)
@@ -174,7 +179,7 @@ extern void wake_up(struct task_struct **p);
 
 #define switch_to(n) {\
     struct {long a, b;} __tmp; \
-    __asm__("cmpl %%ecx, current\n\t" \
+    __asm__ volatile ("cmpl %%ecx, current\n\t" \
             "je 1f\n\t" \
             "movw %%dx, %1\n\t" \
             "xchgl %%ecx, current\n\t" \
@@ -198,7 +203,7 @@ extern void wake_up(struct task_struct **p);
                     "m" (*((addr) + 4)), \
                     "m" (*((addr) + 7)), \
                     "d" (base) \
-                    :"dx" \
+                    /*:"dx"*/ \
             )
 
 
@@ -215,9 +220,9 @@ extern void wake_up(struct task_struct **p);
             "d" (limit) \
             )
 
-#define set_base(ldt, base) _set_base(((char *)ldt), (base))
+#define set_base(ldt, base) _set_base(((char *)&(ldt)), (base))
 // limit >> 12 是因为当Descriptor中G位置位的时候，Limit单位是4KB
-#define set_limit(ldt, limit) _set_base(((char *)ldt), (limit) >> 12)
+#define set_limit(ldt, limit) _set_limit(((char *)ldt), (limit - 1) >> 12)
 
 static inline unsigned long _get_base(char *addr) {
     unsigned long __base;
@@ -232,7 +237,7 @@ static inline unsigned long _get_base(char *addr) {
     return __base;
 }
 
-#define get_base(ldt) _get_base(((char *)ldt))
+#define get_base(ldt) _get_base(((char *)&(ldt)))
 #define get_limit(segment) ({\
     unsigned long __limit; \
     __asm__ volatile("lsll %1, %0\n\tincl %0":"=r"(__limit):"r"(segment)); \
