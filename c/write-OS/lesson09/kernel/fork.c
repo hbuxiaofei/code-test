@@ -67,10 +67,10 @@ int copy_process(int nr, long ebp, long edi, long esi,
     /* Only for emit the warning! */
     i = none;
     none = i;
-    i = eflags;
-    eflags = i;
+    //i = eflags;
+    //eflags = i;
     /* End */
-    
+
     p = (struct task_struct *) get_free_page();
     if(!p)
         return -1;
@@ -89,6 +89,7 @@ int copy_process(int nr, long ebp, long edi, long esi,
     p->cutime = p->cstime = 0;
     p->start_time = jiffies;
     p->tss.back_link = 0;
+    p->tss.eflags = eflags;
     p->tss.esp0 = PAGE_SIZE + (long)p;
     p->tss.ss0 = 0x10;
     p->tss.eip = eip;
@@ -130,7 +131,7 @@ int copy_process(int nr, long ebp, long edi, long esi,
 int find_empty_process(void) {
     int i;
     long tmp = last_pid;    // 记录最初起始进程号，用于标记循环结束
-    
+
     while(1) {
         for(i = 0; i < NR_TASKS; i++) {
             if(task[i] && task[i]->pid == last_pid)
@@ -141,7 +142,7 @@ int find_empty_process(void) {
             break;
         // 判断last_pid 是否超出进程号数据表示范围，如果超出
         // 则置为1
-        if(last_pid < 0) last_pid = 1; 
+        if(last_pid < 0) last_pid = 1;
     }
     for(i = 1; i < NR_TASKS; i++)
         if(!task[i])
