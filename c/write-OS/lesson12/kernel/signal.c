@@ -1,6 +1,6 @@
 #include <linux/kernel.h>
 #include <signal.h>
-#include <linux/types.h>
+#include <sys/types.h>
 #include <serial_debug.h>
 #include <asm/segment.h>
 #include <linux/sched.h>
@@ -11,7 +11,7 @@
 
 void dump_sigaction(struct sigaction *action) {
     s_printk("[DEBUG] Sigaction dump\n");
-    s_printk("[DEBUG] addr = 0x%x, sa_mask = 0x%x, sa_handler = 0x%x, sa_restorer = 0x%x\n", 
+    s_printk("[DEBUG] addr = 0x%x, sa_mask = 0x%x, sa_handler = 0x%x, sa_restorer = 0x%x\n",
             action, action->sa_mask, action->sa_handler, action->sa_restorer);
 }
 
@@ -119,7 +119,7 @@ int sys_signal(int signum, long handler, long restorer) {
     return handler;
 }
 
-int sys_sigaction(int signum, const struct sigaction* action, 
+int sys_sigaction(int signum, const struct sigaction* action,
         struct sigaction *old_action) {
     struct sigaction tmp;
 #ifdef DEBUG
