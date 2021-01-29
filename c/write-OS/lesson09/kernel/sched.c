@@ -44,6 +44,7 @@ void sleep_on(struct task_struct **p) {
 }
 
 void schedule(void) {
+    s_printk("schedule()\n");
     // 我们先不考虑信号处理
     int i, next, c;
     struct task_struct **p;
@@ -67,14 +68,14 @@ void schedule(void) {
         // 运行的任务，那么就退出循环并进行任务切换
         if(c) break;
         for( p = &LAST_TASK; p > &FIRST_TASK; p--) {
-            if(!*p) {
+            if(*p) {
                 (*p)->counter = ((*p)->counter >> 1) + (*p)->priority;
             }
         }
     }
     // switch_to 接收参数为一个 Task 号
     // show_task_info(task[next]);
-    // s_printk("Scheduler select task %d\n", next);
+    s_printk("Scheduler select task %d\n", next);
     switch_to(next)
 }
 
@@ -100,7 +101,7 @@ void wake_up(struct task_struct **p) {
 // 假设我们执行任务A的时候调用了这个函数
 void interruptible_sleep_on(struct task_struct **p) {
     struct task_struct *tmp;
-    
+
     if(!p)
         return;
     if(current == &(init_task.task)) // 我们不能让 init sleep
@@ -109,7 +110,7 @@ void interruptible_sleep_on(struct task_struct **p) {
     *p = current;
 rep_label: current->state = TASK_INTERRUPTIBLE;
     // 这里会转到其他任务去执行
-    schedule(); 
+    schedule();
     // 回来的时候说明，调度程序调度到了这里，current = B
     // 我们要检查队列，如果 *p （这里应该是A) 和 当前运行任务不等
     // 如果不是的话
@@ -137,6 +138,7 @@ int sys_pause(void) {
 int counter = 0;
 long volatile jiffies = 0;
 void do_timer(long cpl) {
+    s_printk("tick! %d\n", jiffies);
     if (!cpl)
         current->stime++;
     else
@@ -175,7 +177,7 @@ void sched_init() {
     __asm__("pushfl; andl $0xffffbfff, (%esp); popfl");
     ltr(0);
     lldt(0);
-    
+
     outb_p(0x43, 0x36);
     outb_p(0x40, divisor & 0xFF);
     outb_p(0x40, divisor >> 8);

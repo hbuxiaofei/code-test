@@ -63,7 +63,7 @@ void calc_mem(void) {
     for(i = 0; i < PAGING_PAGES; i++)
         if(!mem_map[i]) free++;
     printk("%d pages free (of %d in total)\n", free, PAGING_PAGES);
-    
+
     // 遍历除了页表页目录的其余页表项, 如果页面有效, 则统计有效页面数量
     for(i = 2; i < 1024; i++) {
         if(pg_dir[i] & 1) {     // 先检查 Dir 是否存在
@@ -74,7 +74,7 @@ void calc_mem(void) {
                 }
             }
             printk("PageDir[%d] uses %d pages\n", i, k);
-        } 
+        }
     }
     return ;
 }
@@ -106,7 +106,7 @@ unsigned long get_free_page(void) {
 // 就是将mem_map中相应的byte置0,以及做一些必要的error_check
 // 包括是否访问了内核内存,还有是否超出了物理内存(16MB)边界
 void free_page(unsigned long addr) {
-    if(addr < LOW_MEM) return ;      // 决不允许操作物理内存低端 
+    if(addr < LOW_MEM) return ;      // 决不允许操作物理内存低端
     if(addr >= HIGH_MEMORY) return ; // 也不能超过可用内存高端
 
     addr = MAP_NR(addr);        // 计算出需要的页号
@@ -156,7 +156,7 @@ int free_page_tables(unsigned long from, unsigned long size) {
 // 参数 page 为页面的物理地址 address 为线性地址
 unsigned long put_page(unsigned long page, unsigned long address) {
     unsigned long *pg_tbl, tmp;
-    
+
     if(page < LOW_MEM || page >= (unsigned long)HIGH_MEMORY)
         printk("Trying to put page %x at %x\n", page, address);
     // mem_map 中此页为unset状态
@@ -243,8 +243,12 @@ void un_wp_page(unsigned long * table_entry) {
 // 缺页异常会调用此函数
 void do_wp_page(unsigned long error_code, unsigned long address) {
     error_code = error_code; // 纯粹为了消除警告
-    un_wp_page((unsigned long *) ((((address >> 10) & 0xffc) +
-                ((*(unsigned long *)((address >> 20) & 0xffc)))) & 0xfffff000));
+    // un_wp_page((unsigned long *) ((((address >> 10) & 0xffc) +
+    //             ((*(unsigned long *)((address >> 20) & 0xffc)))) & 0xfffff000));
+    //             这是错误的代码
+    un_wp_page((unsigned long *)
+            (((address>>10)&0xffc) + (0xfffff000 &
+                *((unsigned long *)((address >> 20) & 0xffc)))));
 }
 
 // 缺页异常会调用此函数
@@ -273,13 +277,14 @@ void do_no_page(unsigned long error_code, unsigned long address) {
 // 做法为仅仅拷贝其页表项内容，不拷贝其物理内存内容
 // 同时当from = 0时表示从内核拷贝，这时我们不需要拷贝 4MB ,仅仅拷贝 640 KB
 int copy_page_tables(unsigned long from, unsigned long to, unsigned long size) {
+    s_printk("copy_page_tables(0x%x, 0x%x, 0x%x)\n", from, to, size);
     unsigned long *from_page_table;
     unsigned long *to_page_table;
     unsigned long this_page;
     unsigned long *from_dir, *to_dir;
     unsigned long nr;
 
-    // 检查内存边界，必须是4MB的整数倍，否则 panic 
+    // 检查内存边界，必须是4MB的整数倍，否则 panic
     if((from & 0x3fffff) || (to & 0x3fffff)) {
         panic("copy_page_tables called with wrong alignment");
     }
@@ -294,17 +299,22 @@ int copy_page_tables(unsigned long from, unsigned long to, unsigned long size) {
         // from_dir 不存在，就跳过这页页表的复制
         if(!(1 & *from_dir))
             continue;
+        from_page_table = (unsigned long *)(0xfffff000 & *from_dir); // I forget to fetch the from_page_table!! QAQ
+        // s_printk("from_page_table: addr=0x%x\n", (unsigned long)(0xfffff000 & (unsigned long)*from_page_table));
         if(!(to_page_table = (unsigned long *) get_free_page()))
             return -1;
+        // s_printk("to_page_table = 0x%x\n", (unsigned long)(0xfffff000 & (unsigned long)*to_page_table));
         *to_dir = ((unsigned long)to_page_table | 7);
         // 判断是不是复制内核页，如果是则只copy 640KB(0xA0=160个页面)
         nr = (from == 0)?0xA0:1024;
         for(; nr-->0; from_page_table++, to_page_table++) {
             this_page = *from_page_table;
+            // s_printk("this_page_before: addr=0x%x\n", (unsigned long)(0xfffff000 & (unsigned long)this_page));
             if(!(1 & this_page))
                 continue;
             // 这里将复制的页设置为只读
             this_page &= (unsigned long)~2;
+            // s_printk("this_page_after: addr=0x%x\n", (unsigned long)(0xfffff000 & (unsigned long)this_page));
             *to_page_table = this_page;
             // 如果复制的页面地址为高于LOW_MEM，说明不是从内核空间复制
             // 同时把原页面也设置为只读，这样二者共享了物理页面，如果向任何一个页面写入都会
