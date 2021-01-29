@@ -6,6 +6,8 @@
 #include <asm/io.h>
 #include <serial_debug.h>
 
+// #define DEBUG
+
 extern int timer_interrupt(void);
 extern int system_call(void);
 
@@ -77,9 +79,10 @@ void schedule(void) {
     // show_task_info(task[next]);
     // printk("[%x] Scheduler select task %d\n", jiffies, next);
     // printk("[%x] Scheduler select task\n", next);
-
+#ifdef DEBUG
     s_printk("[DEBUG] [%x] Scheduler select task %d\n", jiffies, next); // THE 'next' VALUE IS NOT CORRECT!
     s_printk("[DEBUG] Scheduler select task %d\n", next);  // THIS CAUSE CRASH
+#endif
     // TODO Fix the bug
     // These two lines of code will cause OS Crash
     // When switch to printk it won't
@@ -109,7 +112,7 @@ void wake_up(struct task_struct **p) {
 // 假设我们执行任务A的时候调用了这个函数
 void interruptible_sleep_on(struct task_struct **p) {
     struct task_struct *tmp;
-
+    
     if(!p)
         return;
     if(current == &(init_task.task)) // 我们不能让 init sleep
@@ -118,7 +121,7 @@ void interruptible_sleep_on(struct task_struct **p) {
     *p = current;
 rep_label: current->state = TASK_INTERRUPTIBLE;
     // 这里会转到其他任务去执行
-    schedule();
+    schedule(); 
     // 回来的时候说明，调度程序调度到了这里，current = B
     // 我们要检查队列，如果 *p （这里应该是A) 和 当前运行任务不等
     // 如果不是的话
@@ -184,7 +187,7 @@ void sched_init() {
     __asm__("pushfl; andl $0xffffbfff, (%esp); popfl");
     ltr(0);
     lldt(0);
-
+    
     outb_p(0x43, 0x36);
     outb_p(0x40, divisor & 0xFF);
     outb_p(0x40, divisor >> 8);
@@ -197,3 +200,5 @@ void sched_init() {
     // 初始化 system_call
     set_system_gate(0x80, &system_call);
 }
+
+#undef DEBUG
