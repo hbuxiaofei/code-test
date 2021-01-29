@@ -21,6 +21,7 @@ int tty_isfull_q(const struct tty_queue *q) {
 
 // Here we should check the queue, if emtpy sleep
 char tty_pop_q(struct tty_queue *q) {
+    sleep_if_empty(q);
     char ch;
     ch = q->buf[q->head];
     q->head = (q->head + 1) % TTY_BUF_SIZE;

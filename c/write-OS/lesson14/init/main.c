@@ -68,7 +68,7 @@ int main() {
     tty_init();
     sti();
     printk("TTY Init done\n", 1);
-    printk("root@linux0.11# ");
+    printk("root@neu-os# ");
 
     // 初始化物理页内存, 将 1MB - 16MB 地址空间的内存进行初始化
     // s_printk("Test Serial mem_init = %x\n", mem_init);
@@ -93,11 +93,17 @@ void sched_abcd_demo() {
     // print AABB randomly
     char buf[100] = "TTY";
     printf("Welcome to the OS, your are current at %x\n", sched_abcd_demo);
-    // getline(buf);
-    // user_tty_read(0, buf, 1);
-    // user_tty_write(0, buf, 10);
-    printf("This is a multi-thread demo, start in 3s ...");
-    sleep(3);
+    printf("Execuse me, but who are you? ");
+    getline(buf);
+    printf("%s, emm good name! Hi %s. :)\n", buf, buf);
+    printf("%s@linux0.11-os$");
+    printf("This is a multi-thread demo, start in 3s ... 3");
+    sleep(1);
+    printf(".2");
+    sleep(1);
+    printf(".1");
+    sleep(1);
+    printf(".0\n");
     if(!fork()) {
         while(1) {
             printf("A");
@@ -110,12 +116,12 @@ void sched_abcd_demo() {
     }
     if(!fork()) {
         while(1) {
-            printf("B");
+            printf("C");
         }
     }
     if(!fork()) {
         while(1) {
-            printf("B");
+            printf("D");
         }
     }
     while(1);
