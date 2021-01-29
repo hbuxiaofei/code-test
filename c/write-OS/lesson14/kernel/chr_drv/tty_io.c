@@ -92,12 +92,13 @@ void tty_write(struct tty_struct* tty) {
 }
 
 // 队列为空时，进程进入睡眠状态, 可被中断唤醒
-static void sleep_if_empty(struct tty_queue *q) {
-    cli();
-    while(!current->signal && tty_isempty_q(q))
-        interruptible_sleep_on(&q->wait_proc);
-    sti();
-}
+// TODO: write sleep_if_empty
+// static void sleep_if_empty(struct tty_queue *q) {
+//     cli();
+//     while(!current->signal && tty_isempty_q(q))
+//         interruptible_sleep_on(&q->wait_proc);
+//     sti();
+// }
 
 // static void sleep_if_full(struct tty_queue *q) {
 //     cli();
@@ -114,10 +115,10 @@ int tty_read(int channel, char *buf, int nr) {
     int len = 0;
     char ch;
     char *p = buf;
-    unsigned int i;
+    // unsigned int i;
     // return from the tty_read when recv a \n or EOF
-    char done = 0;
-    unsigned int headptr = 0;
+    // char done = 0;
+    //unsigned int headptr = 0;
     // Sanity check
 #ifdef DEBUG
     s_printk("buf addr = 0x%x\n", buf);
@@ -135,14 +136,16 @@ int tty_read(int channel, char *buf, int nr) {
         // TODO: Change -1 to EOF
         if (ch == '\n' || ch == -1) {
             // \n Or EOF, we are done
-            done = 1;
+            // done = 1;
             // Now we can just stop and pop all to buffer
             break;
         }
         /* if (ch == CTRL_INT) return -1; */
         put_fs_byte(ch, p);
         *p++ = ch;
-        s_printk("%s\n", buf);
+#ifdef DEBUG
+        s_printk("Buf = %s\n", buf);
+#endif
         len++;
         nr--;
     }
