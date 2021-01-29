@@ -44,7 +44,7 @@ void test_put_page() {
 }
 
 // Helper function to convert linear address to PTE
-// return physical address on success
+// return a pointer to a page table entry on success
 // return NULL(0) on failed
 unsigned long *linear_to_pte(unsigned long addr) {
     // get the Page Directory Entry first
@@ -136,7 +136,7 @@ int mmtest_main(void) {
     mm_read_only(0xdad233);
     x = (unsigned long *)0xdad233;
     // DO not modify this code
-    // Here will disable WP bit (temporarily)
+    // Here will make WP bit enabled (temporarily)
     // WP：对于Intel 80486或以上的CPU，CR0的位16是写保护（Write Proctect）标志。
     // 当设置该标志时，处理器会禁止超级用户程序（例如特权级0的程序）向用户级只读页面执行写操作
     asm volatile("mov %%cr0, %%eax\n\t"
