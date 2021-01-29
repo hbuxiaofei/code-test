@@ -19,6 +19,7 @@ int tty_isfull_q(const struct tty_queue *q) {
     return 0;
 }
 
+// Here we should check the queue, if emtpy sleep
 char tty_pop_q(struct tty_queue *q) {
     char ch;
     ch = q->buf[q->head];
@@ -35,6 +36,14 @@ int tty_push_q(struct tty_queue *q, char ch) {
     return 0;
 }
 
+int tty_push_q_front(struct tty_queue *q, char ch) {
+    if (tty_isfull_q(q))
+        return -1;
+    q->head = (q->head - 1) % TTY_BUF_SIZE;
+    q->buf[q->head] = ch;
+    return 0;
+}
+
 char tty_queue_head(const struct tty_queue *q) {
     return q->buf[q->head];
 }
@@ -48,7 +57,10 @@ void tty_queue_stat(const struct tty_queue *q) {
     s_printk("[DEBUG] Queue head = %d, tail = %d\n", q->head, q->tail);
     s_printk("[DEBUG] Queue: [ ");
     for (i = q->head; i != q->tail; i = (i + 1) % TTY_BUF_SIZE) {
-        s_printk("%c<-", q->buf[i]);
+        s_printk("%d<-", q->buf[i]);
+        if(i == (q->tail - 1) % TTY_BUF_SIZE) {
+            s_printk("#");
+        }
     }
     s_printk(" ]\n");
 }
