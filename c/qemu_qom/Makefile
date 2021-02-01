@@ -16,7 +16,10 @@ ${OBJDIR}/%.o: %.c
 ${TARGET}: ${OBJECTS}
 	${CC}  ${CFLAGS} ${LDFLAGS} ${OBJECTS} -o $@
 
+ctags:
+	ctags -R
+
 clean:
 	rm -f *.o
 	rm -f main.out
-
+	rm -f tags

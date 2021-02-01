@@ -1,5 +1,5 @@
 # What is the qom
-The qom is the object model of [qemu](https://github.com/qemu/qemu)(a.k.a. quick emulator). With the qom, we can 
+The qom is the object model of [qemu](https://github.com/qemu/qemu)(a.k.a. quick emulator). With the qom, we can
 use **c** language to write code in **OOP(object-oriented programming)** way.
 
 # Usage
@@ -33,7 +33,7 @@ typedef struct Base {
 typedef struct BaseClass {
    ObjectClass parent_class;
 
-   void (*say)(void*); 
+   void (*say)(void*);
 } BaseClass;
 ```
 
@@ -58,7 +58,7 @@ by using the following code:
 BASE_GET_CLASS(obj)->say(obj);
 ```
 In qom, the creation of an instance can be finished by two steps:
-- allocate memery 
+- allocate memery
 - initialize the data member
 qom supply us with an **instance init hook function**, which acts as  **constructor** in OO language. The following
 shows the instance init hook in this example:
@@ -83,10 +83,10 @@ The last thing to do is to fill the **TypeInfo** struct, which descripts some ba
 static const TypeInfo type_info = {
     .name = TYPE_BASE,
     .parent = TYPE_OBJECT,
-    .instance_size = sizeof(Base),
     .abstract = false,
-    .class_size = sizeof(BaseClass),
+    .instance_size = sizeof(Base),
     .instance_init = instance_init,
+    .class_size = sizeof(BaseClass),
     .class_init = class_init,
 };
 
@@ -94,7 +94,7 @@ static const TypeInfo type_info = {
 and then register it by calling ```type_register_static(&type_info)```.
 
  # Resources
-- There is a project named [OBS-Framework](https://github.com/Gyumeijie/OBS-Framework) athoured by me, heavily 
+- There is a project named [OBS-Framework](https://github.com/Gyumeijie/OBS-Framework) athoured by me, heavily
 using qom model, you can visit it for more information.
 
 - In some way, the qom is an simiplified version of [Gobject](https://developer.gnome.org/gobject/stable/), which
