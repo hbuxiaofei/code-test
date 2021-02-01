@@ -39,7 +39,9 @@ gchar* g_strdup_printf (const gchar *format, ...);
 G_END_DECLS
 
 #if !defined (G_VA_COPY)
-#  if defined (__GNUC__) && defined (__PPC__) && (defined (_CALL_SYSV) || defined (_WIN32))
+#  if defined va_copy
+#    define G_VA_COPY va_copy
+#  elif defined (__GNUC__) && defined (__PPC__) && (defined (_CALL_SYSV) || defined (_WIN32))
 #    define G_VA_COPY(ap1, ap2)	  (*(ap1) = *(ap2))
 #  elif defined (G_VA_COPY_AS_ARRAY)
 #    define G_VA_COPY(ap1, ap2)	  memmove ((ap1), (ap2), sizeof (va_list))
