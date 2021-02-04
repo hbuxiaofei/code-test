@@ -85,6 +85,7 @@ if [ ! -d ${BUILD_DIR} ]; then
         --disable-strip \
         --enable-werror \
         --disable-slirp \
+        --disable-guest-agent \
         --enable-vnc \
         --disable-docs \
         --enable-nettle \
