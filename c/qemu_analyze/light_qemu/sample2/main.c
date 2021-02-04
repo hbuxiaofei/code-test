@@ -1,23 +1,25 @@
 /*
  * KVM API Sample.
- * author: Xu He Jie xuhj@cn.ibm.com
  */
-#include <stdio.h>
-#include <memory.h>
-#include <sys/mman.h>
-#include <pthread.h>
-#include <linux/kvm.h>
-#include <fcntl.h>
-#include <stdlib.h>
-#include <assert.h>
 
-#define KVM_DEVICE "/dev/kvm"
-#define RAM_SIZE 512000000
-#define CODE_START 0x1000
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <assert.h>
+#include <memory.h>
+#include <pthread.h>
+#include <sys/mman.h>
+#include <sys/ioctl.h>
+#include <linux/kvm.h>
+
+#define KVM_DEVICE  "/dev/kvm"
+#define RAM_SIZE    512000000
+#define CODE_START  0x1000
 #define BINARY_FILE "test.bin"
 
 struct kvm {
-   int dev_fd;	
+   int dev_fd;
    int vm_fd;
    __u64 ram_size;
    __u64 ram_start;
@@ -81,7 +83,7 @@ void *kvm_cpu_thread(void *data) {
 	while (1) {
 		printf("KVM start run\n");
 		ret = ioctl(kvm->vcpus->vcpu_fd, KVM_RUN, 0);
-	
+
 		if (ret < 0) {
 			fprintf(stderr, "KVM_RUN failed\n");
 			exit(1);
@@ -96,8 +98,8 @@ void *kvm_cpu_thread(void *data) {
 			break;
 		case KVM_EXIT_IO:
 			printf("KVM_EXIT_IO\n");
-			printf("out port: %d, data: %d\n", 
-				kvm->vcpus->kvm_run->io.port,  
+			printf("out port: %d, data: %d\n",
+				kvm->vcpus->kvm_run->io.port,
 				*(int *)((char *)(kvm->vcpus->kvm_run) + kvm->vcpus->kvm_run->io.data_offset)
 				);
 			sleep(1);
@@ -173,15 +175,15 @@ int kvm_create_vm(struct kvm *kvm, int ram_size) {
     }
 
     kvm->ram_size = ram_size;
-    kvm->ram_start =  (__u64)mmap(NULL, kvm->ram_size, 
-                PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_NORESERVE, 
+    kvm->ram_start =  (__u64)mmap(NULL, kvm->ram_size,
+                PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_NORESERVE,
                 -1, 0);
 
     if ((void *)kvm->ram_start == MAP_FAILED) {
         perror("can not mmap ram");
         return -1;
     }
-    
+
     kvm->mem.slot = 0;
     kvm->mem.guest_phys_addr = 0;
     kvm->mem.memory_size = kvm->ram_size;

@@ -1,4 +1,6 @@
-all: kvmsample test.bin
+OBJ = kvmsample test.bin
+
+all: $(OBJ)
 
 kvmsample: main.o
 	gcc main.c -o kvmsample -lpthread
@@ -8,4 +10,6 @@ test.bin: test.o
 
 test.o: test.S
 	as -32 test.S -o test.o
-	
+
+clean:
+	- @rm -f *.o $(OBJ)
