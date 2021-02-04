@@ -5,6 +5,15 @@ cd $(dirname $0)
 BUILD_DIR="build"
 CPU_NR=$(lscpu 2>/dev/null | grep "^CPU(s):" | awk '{print $2}')
 
+install_ninja() {
+    # https://github.com/ninja-build/ninja.git
+    git clone https://hub.fastgit.org/ninja-build/ninja.git
+    pushd ninja
+    ./configure.py --bootstrap
+    cp -f ninja /usr/local/bin/
+    popd
+}
+
 install_depends4centos8() {
     ln -s /usr/bin/python3 /usr/bin/python
     yum install -y git
