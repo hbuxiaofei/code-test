@@ -1,0 +1,10 @@
+[package]
+name = "qwer-learner"
+version = "0.1.0"
+authors = ["rayylee <rayylee@foxmail.com>"]
+edition = "2018"
+
+# https://crates.io
+[dependencies]
+yew = "0.17.4"
+js-sys = "0.3.47"
