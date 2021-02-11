@@ -7,6 +7,14 @@ body {
     background-color: $primary-color;
 }
 
+#header {
+    text-align: left;
+}
+
+#footer {
+    text-align: center;
+}
+
 #buttons {
     text-align: right;
 }
@@ -26,4 +34,4 @@ body {
 #messages {
     float: right;
 }
-  
+
