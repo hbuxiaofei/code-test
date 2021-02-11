@@ -7,11 +7,7 @@ use yew::services::interval::{IntervalService, IntervalTask};
 use yew::services::{ConsoleService, Task, TimeoutService};
 
 pub enum Msg {
-    StartTimeout,
-    StartInterval,
-    Cancel,
-    Done,
-    Tick,
+    ButtonStart,
     UpdateTime,
 }
 
@@ -39,12 +35,15 @@ impl Component for Model {
             Duration::from_secs(10),
             // This callback doesn't send any message to a scope
             Callback::from(|_| {
-                ConsoleService::debug("Example of a standalone callback.");
+                ConsoleService::info(">>> Standalone timer callback.");
             }),
         );
 
-        let clock_handle =
-            IntervalService::spawn(Duration::from_secs(1), link.callback(|_| Msg::UpdateTime));
+        let clock_handle = IntervalService::spawn(
+            Duration::from_secs(1),
+            // Timer callback
+            link.callback(|_| Msg::UpdateTime),
+        );
 
         Self {
             link,
@@ -57,52 +56,10 @@ impl Component for Model {
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
-            Msg::StartTimeout => {
-                let handle = TimeoutService::spawn(
-                    Duration::from_secs(3),
-                    self.link.callback(|_| Msg::Done),
-                );
-                self.job = Some(Box::new(handle));
-
-                self.messages.clear();
-                ConsoleService::clear();
-
-                self.messages.push("Timer started!");
-                ConsoleService::time_named("Timer");
-                true
-            }
-            Msg::StartInterval => {
-                let handle = IntervalService::spawn(
-                    Duration::from_secs(1),
-                    self.link.callback(|_| Msg::Tick),
-                );
-                self.job = Some(Box::new(handle));
-
-                self.messages.clear();
-                ConsoleService::clear();
-
-                self.messages.push("Interval started!");
-                true
-            }
-            Msg::Cancel => {
+            Msg::ButtonStart => {
                 self.job = None;
-                self.messages.push("Canceled!");
-                ConsoleService::warn("Canceled!");
-                true
-            }
-            Msg::Done => {
-                self.job = None;
-                self.messages.push("Done!");
-
-                ConsoleService::group();
-                ConsoleService::info("Done!");
-                ConsoleService::time_named_end("Timer");
-                ConsoleService::group_end();
-                true
-            }
-            Msg::Tick => {
-                self.messages.push("Tick...");
-                ConsoleService::count_named("Tick");
+                self.messages.push("Button [Start] pressed.");
+                ConsoleService::warn(">>> Button [Start] pressed.");
                 true
             }
             Msg::UpdateTime => {
@@ -121,14 +78,8 @@ impl Component for Model {
         html! {
             <>
                 <div id="buttons">
-                    <button disabled=has_job onclick=self.link.callback(|_| Msg::StartTimeout)>
-                        { "Start Timeout" }
-                    </button>
-                    <button disabled=has_job onclick=self.link.callback(|_| Msg::StartInterval)>
-                        { "Start Interval" }
-                    </button>
-                    <button disabled=!has_job onclick=self.link.callback(|_| Msg::Cancel)>
-                        { "Cancel!" }
+                    <button onclick=self.link.callback(|_| Msg::ButtonStart)>
+                        { "Start" }
                     </button>
                 </div>
                 <div id="wrapper">
