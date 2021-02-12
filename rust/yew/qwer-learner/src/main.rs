@@ -9,6 +9,7 @@ use crate::components::{
     header::Header,
     footer::Footer,
     body::Body,
+    keyboard::Keyboard,
 };
 
 pub struct Model;
@@ -37,6 +38,7 @@ impl Component for Model {
                 </header>
                 <div>
                     <Body/>
+                    <Keyboard/>
                 </div>
                 <footer>
                     <Footer/>
