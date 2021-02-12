@@ -1,7 +1,11 @@
-use std::time::Duration;
+use std::{
+    time::Duration,
+};
 use yew::{html, Callback, Component, ComponentLink, Html, ShouldRender};
 use yew::services::interval::{IntervalService, IntervalTask};
 use yew::services::{ConsoleService, Task};
+
+use web_sys::HtmlAudioElement;
 
 use crate::common::msg::Msg;
 
@@ -26,10 +30,10 @@ impl Component for Body {
 
     fn create(_props: Self::Properties, link: ComponentLink<Self>) -> Self {
         let standalone_handle = IntervalService::spawn(
-            Duration::from_secs(10),
+            Duration::from_secs(60),
             // This callback doesn't send any message to a scope
             Callback::from(|_| {
-                ConsoleService::info(">>> Standalone timer callback.");
+                ConsoleService::info("> Standalone timer callback.");
             }),
         );
 
@@ -53,7 +57,22 @@ impl Component for Body {
             Msg::ButtonStart => {
                 self.job = None;
                 self.messages.push("Button [Start] pressed.");
-                ConsoleService::warn(">>> Button [Start] pressed.");
+                ConsoleService::info("> Button [Start] pressed.");
+
+                let audio_url = "http://dict.youdao.com/dictvoice?type=0&audio=";
+                let word = "start";
+                let word_url =  audio_url.to_string() + &word.to_string();
+                let result = HtmlAudioElement::new_with_src(word_url.as_str());
+                match result {
+                    Ok(v) => {
+                        match v.play() {
+                            Ok(_ok) => ConsoleService::info("> new html audio ok."),
+                            Err(_err) => ConsoleService::warn("> play audio err."),
+                        }
+                    },
+                    Err(_e) => ConsoleService::warn("> new html audio err."),
+                }
+
                 true
             }
             Msg::UpdateTime => {
