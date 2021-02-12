@@ -1,28 +1,37 @@
-use yew::{html, Component, ComponentLink, Html, ShouldRender};
+use yew::{html, Bridge, Component, ComponentLink, Html, ShouldRender};
 use yew::services::{ConsoleService};
-use wasm_bindgen::{JsCast, prelude::Closure};
+use yew::agent::Bridged;
 
-pub struct Keyboard;
+use crate::common::msg::Key;
+use crate::common::event_bus::{EventBus};
+
+pub struct Keyboard {
+    inputs: String,
+    _producer: Box<dyn Bridge<EventBus>>,
+}
 
 impl Component for Keyboard {
-    type Message = ();
+    type Message = Key;
     type Properties = ();
 
-    fn create(_props: Self::Properties, _link: ComponentLink<Self>) -> Self {
-	let window = web_sys::window().unwrap();
-
-	let cb = Closure::wrap(Box::new(|| {
-	    ConsoleService::info("> key [someone] pressed.");
-	}) as Box<dyn FnMut()>);
-
-	window.add_event_listener_with_callback("keydown",
-            cb.as_ref().unchecked_ref()).unwrap();
-	cb.forget();
-
-        Self
+    fn create(_props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        Self {
+            inputs: String::with_capacity(100),
+            _producer: EventBus::bridge(link.callback(Key::SetText)),
+        }
     }
 
-    fn update(&mut self, _msg: Self::Message) -> ShouldRender {
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
+	match msg {
+	    Key::SetText(text) => {
+                let s = format!("> window key {} pressed.", text);
+                ConsoleService::info(s.as_str());
+	    }
+	    Key::Submit => {
+                ConsoleService::info("> window key [enter] pressed.");
+	    }
+	}
+
         true
     }
 
