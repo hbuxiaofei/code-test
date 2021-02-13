@@ -4,10 +4,13 @@ use std::{
 use yew::{html, Callback, Component, ComponentLink, Html, ShouldRender};
 use yew::services::interval::{IntervalService, IntervalTask};
 use yew::services::{ConsoleService, Task};
+use wasm_bindgen::{JsCast, prelude::Closure};
 
-use web_sys::HtmlAudioElement;
+use web_sys::{HtmlAudioElement, AudioBuffer, AudioBufferSourceNode, AudioContext, OfflineAudioContext};
 
 use crate::common::msg::Msg;
+
+const SOURCE_SOUND: &[u8] = include_bytes!("../content/sound/dog.mp3");
 
 pub struct Body {
     link: ComponentLink<Self>,
@@ -63,6 +66,7 @@ impl Component for Body {
                 let word = "start";
                 let word_url =  audio_url.to_string() + &word.to_string();
                 let result = HtmlAudioElement::new_with_src(word_url.as_str());
+
                 match result {
                     Ok(v) => {
                         match v.play() {
@@ -73,6 +77,42 @@ impl Component for Body {
                     Err(_e) => ConsoleService::warn("> new html audio err."),
                 }
 
+                let show_str = format!("> SOURCE_SOUND len is: {:?}", SOURCE_SOUND.len());
+                ConsoleService::info(&show_str);
+
+                let array_u8 = js_sys::Uint8Array::new_with_length(SOURCE_SOUND.len() as u32);
+                for i in 0..(SOURCE_SOUND.len()) {
+                    array_u8.fill(SOURCE_SOUND[i], i as u32, (i+1) as u32);
+                }
+
+                let array_buf = array_u8.buffer();
+
+                let audio_ctx =
+                    OfflineAudioContext::new_with_number_of_channels_and_length_and_sample_rate(
+                        1,
+                        SOURCE_SOUND.len() as u32,
+                        128000.0
+                    ).unwrap();
+
+
+                let song = audio_ctx.create_buffer_source().unwrap();
+                let handler = move | buf: AudioBuffer | {
+                    let buffer: Option<&AudioBuffer> = Some(&buf);
+
+                    song.set_buffer(buffer);
+                    // song.connect_with_audio_node(audio_ctx.destination().as_ref());
+                    song.start();
+                };
+
+                // let handle = Box::new(handler) as Box<dyn FnMut(_)>;
+                let handle = Box::new(handler) as Box<dyn FnMut(_)>;
+
+                let cb = Closure::wrap(handle);
+
+                // audio_ctx.decode_audio_data(&array_buf);
+                audio_ctx.decode_audio_data_with_success_callback(&array_buf,
+                    cb.as_ref().unchecked_ref());
+                cb.forget();
                 true
             }
             Msg::UpdateTime => {

@@ -15,4 +15,10 @@ serde = { version = "1.0", features = ["derive"] }
 version = "0.3.47"
 features = [
     'HtmlAudioElement',
+    'OfflineAudioContext',
+    'AudioContext',
+    'AudioBufferSourceNode',
+    'AudioBuffer',
+    'AudioDestinationNode',
+    'BaseAudioContext',
 ]
