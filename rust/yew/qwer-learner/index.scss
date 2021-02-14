@@ -26,12 +26,23 @@ body {
 
 #time {
     text-align: center;
-    font-size: 17vh;
-    padding: 15% 0;
+    font-size: 8vh;
     float: left;
+}
+
+#word {
+    text-align: center;
+    font-size: 12vh;
+    float: center;
+}
+
+#trans{
+    text-align: center;
+    padding: 10% 0;
 }
 
 #messages {
     float: right;
+    bottom: 0;
 }
 
