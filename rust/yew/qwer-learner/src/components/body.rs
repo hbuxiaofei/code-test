@@ -16,7 +16,6 @@ pub struct Body {
     link: ComponentLink<Self>,
     job: Option<Box<dyn Task>>,
     time: String,
-    messages: Vec<&'static str>,
     _standalone: (IntervalTask, IntervalTask),
 }
 
@@ -50,7 +49,6 @@ impl Component for Body {
             link,
             job: None,
             time: Body::get_current_time(),
-            messages: Vec::new(),
             _standalone: (standalone_handle, clock_handle),
         }
     }
@@ -59,7 +57,6 @@ impl Component for Body {
         match msg {
             Msg::ButtonStart => {
                 self.job = None;
-                self.messages.push("Button [Start] pressed.");
                 ConsoleService::info("> Button [Start] pressed.");
 
                 let audio_url = "http://dict.youdao.com/dictvoice?type=0&audio=";
@@ -137,9 +134,6 @@ impl Component for Body {
                 <div id="wrapper">
                     <div id="time">
                         { &self.time }
-                    </div>
-                    <div id="messages">
-                        { for self.messages.iter().map(|message| html! { <p>{ message }</p> }) }
                     </div>
                 </div>
             </>
