@@ -1,6 +1,3 @@
-use serde_json::json;
-use std::fs::File;
-
 use yew::{html, Bridge, Component, ComponentLink, Html, ShouldRender};
 use yew::services::{ConsoleService};
 use yew::agent::Bridged;
@@ -13,11 +10,14 @@ static AUDIO_URL: &str = "http://dict.youdao.com/dictvoice?type=0&audio=";
 const SOURCE_DICT: &str = include_str!("../content/dicts/CET6_T.json");
 
 pub struct Keyboard {
+    start_status: String,
+    start_style: String,
     dict: serde_json::Value,
     nr_dict: usize,
     index: usize,
     inputs: String,
     _producer: Box<dyn Bridge<EventBus>>,
+    link: ComponentLink<Self>,
 }
 
 impl Component for Keyboard {
@@ -34,14 +34,17 @@ impl Component for Keyboard {
             nr_dict: nr_dict,
             index: index,
             inputs: String::with_capacity(100),
+            start_status: String::from("Start"),
+            start_style: String::from("background-color:#F5F5F5"),
             _producer: EventBus::bridge(link.callback(Key::SetText)),
+            link,
         }
     }
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
 	match msg {
 	    Key::SetText(text) => {
-                if text.len() > 0 {
+                if self.start_status == String::from("Pause") && text.len() == 1 {
                     let b = text.as_bytes()[0];
                     let c: char = b as char;
                     self.inputs.push(c);
@@ -71,13 +74,24 @@ impl Component for Keyboard {
                     }
                 }
 
-                let index = self.index;
-                let word = self.dict[index]["name"].as_str().unwrap();
+                let word = self.dict[self.index]["name"].as_str().unwrap();
                 let s = format!("> window key:{} for:{} inputs:{}, dict len:{}.",
                     text, word, self.inputs, self.nr_dict);
                 ConsoleService::info(s.as_str());
 	    }
 	    Key::Submit => {
+                if self.start_status == String::from("Start") {
+                    self.start_status = String::from("Pause");
+                    self.start_style = String::from("background-color:#008f53");
+
+                    let word = self.dict[self.index]["name"].as_str().unwrap();
+                    let word_url = AUDIO_URL.to_string() + &word.to_string();
+                    let audio = HtmlAudioElement::new_with_src(word_url.as_str()).unwrap();
+                    audio.play().unwrap();
+                } else {
+                    self.start_status = String::from("Start");
+                    self.start_style = String::from("background-color:#F5F5F5");
+                }
                 ConsoleService::info("> window key [enter] pressed.");
 	    }
 	}
@@ -99,6 +113,11 @@ impl Component for Keyboard {
 
          html! {
              <>
+                <div id="buttons">
+                    <button onclick=self.link.callback(|_| Key::Submit) style=self.start_style>
+                        { &self.start_status }
+                    </button>
+                </div>
                  <div id="word">
                     { for inputs_byte.iter().map(|b| html! { <font color="red">{ *b as char }</font> }) }
                     { for name_byte_last.iter().map(|b| html! { <font color="white">{ *b as char }</font> }) }

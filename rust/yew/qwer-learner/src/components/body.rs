@@ -6,7 +6,7 @@ use yew::services::interval::{IntervalService, IntervalTask};
 use yew::services::{ConsoleService, Task};
 use wasm_bindgen::{JsCast, prelude::Closure};
 
-use web_sys::{HtmlAudioElement, AudioBuffer, AudioBufferSourceNode, AudioContext, OfflineAudioContext};
+use web_sys::{AudioBuffer, OfflineAudioContext};
 
 use crate::common::msg::Msg;
 
@@ -59,21 +59,6 @@ impl Component for Body {
                 self.job = None;
                 ConsoleService::info("> Button [Start] pressed.");
 
-                let audio_url = "http://dict.youdao.com/dictvoice?type=0&audio=";
-                let word = "start";
-                let word_url =  audio_url.to_string() + &word.to_string();
-                let result = HtmlAudioElement::new_with_src(word_url.as_str());
-
-                match result {
-                    Ok(v) => {
-                        match v.play() {
-                            Ok(_ok) => ConsoleService::info("> new html audio ok."),
-                            Err(_err) => ConsoleService::warn("> play audio err."),
-                        }
-                    },
-                    Err(_e) => ConsoleService::warn("> new html audio err."),
-                }
-
                 let show_str = format!("> SOURCE_SOUND len is: {:?}", SOURCE_SOUND.len());
                 ConsoleService::info(&show_str);
 
@@ -98,7 +83,7 @@ impl Component for Body {
 
                     song.set_buffer(buffer);
                     // song.connect_with_audio_node(audio_ctx.destination().as_ref());
-                    song.start();
+                    song.start().unwrap();
                 };
 
                 // let handle = Box::new(handler) as Box<dyn FnMut(_)>;
@@ -108,7 +93,7 @@ impl Component for Body {
 
                 // audio_ctx.decode_audio_data(&array_buf);
                 audio_ctx.decode_audio_data_with_success_callback(&array_buf,
-                    cb.as_ref().unchecked_ref());
+                    cb.as_ref().unchecked_ref()).unwrap();
                 cb.forget();
                 true
             }
@@ -128,7 +113,7 @@ impl Component for Body {
             <>
                 <div id="buttons">
                     <button onclick=self.link.callback(|_| Msg::ButtonStart)>
-                        { "Start" }
+                        { "Setting" }
                     </button>
                 </div>
                 <div id="wrapper">
