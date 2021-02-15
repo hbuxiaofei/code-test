@@ -24,6 +24,10 @@ impl Component for Input {
                 let s = format!("> key {} pressed.", text);
                 ConsoleService::info(s.as_str());
 	    }
+	    Key::SelectLevel(level) => {
+                let msg = format!("> input level [{:?}].", level);
+                ConsoleService::info(&msg);
+            }
 	    Key::Submit => {
                 ConsoleService::info("> key [enter] pressed.");
 	    }

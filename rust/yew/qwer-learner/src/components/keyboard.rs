@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use yew::{html, Bridge, Component, ComponentLink, Html, ShouldRender};
 use yew::services::{ConsoleService};
 use yew::agent::Bridged;
@@ -7,7 +9,27 @@ use crate::common::msg::Key;
 use crate::common::event_bus::{EventBus};
 
 static AUDIO_URL: &str = "http://dict.youdao.com/dictvoice?type=0&audio=";
-const SOURCE_DICT: &str = include_str!("../content/dicts/CET6_T.json");
+
+const DICT_PROGRAMMER: &str = include_str!("../content/dicts/it-words.json");
+const DICT_CET6: &str = include_str!("../content/dicts/CET6_T.json");
+const DICT_TOEFL: &str = include_str!("../content/dicts/TOEFL_T.json");
+
+lazy_static::lazy_static! {
+    static ref DICT_INDEX: Vec<&'static str> = vec![
+        "Programmer",
+        "CET6",
+        "TOEFL",
+    ];
+
+    static ref DICT_MAP: HashMap<String, &'static str> =
+    {
+        let mut map = HashMap::new();
+        map.insert(DICT_INDEX[0].to_string(), DICT_PROGRAMMER);
+        map.insert(DICT_INDEX[1].to_string(), DICT_CET6);
+        map.insert(DICT_INDEX[2].to_string(), DICT_TOEFL);
+        map
+    };
+}
 
 pub struct Keyboard {
     start_status: String,
@@ -25,14 +47,15 @@ impl Component for Keyboard {
     type Properties = ();
 
     fn create(_props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        let index = 0;
-        let dict: serde_json::Value = serde_json::from_str(SOURCE_DICT).unwrap();
+        let dict: serde_json::Value =
+            serde_json::from_str(DICT_MAP[&DICT_INDEX[0].to_string()]).unwrap();
+
         let nr_dict: usize = dict.as_array().unwrap().len();
 
         Self {
             dict: dict,
             nr_dict: nr_dict,
-            index: index,
+            index: 0,
             inputs: String::with_capacity(100),
             start_status: String::from("Start"),
             start_style: String::from("background-color:#F5F5F5"),
@@ -75,10 +98,19 @@ impl Component for Keyboard {
                 }
 
                 let word = self.dict[self.index]["name"].as_str().unwrap();
-                let s = format!("> window key:{} for:{} inputs:{}, dict len:{}.",
+                let msg = format!("> window key:{} for:{} inputs:{}, dict len:{}.",
                     text, word, self.inputs, self.nr_dict);
-                ConsoleService::info(s.as_str());
+                ConsoleService::info(&msg);
 	    }
+	    Key::SelectLevel(level) => {
+                let msg = format!("> select level: {}.", level);
+                ConsoleService::info(&msg);
+
+                self.dict = serde_json::from_str(DICT_MAP[&level]).unwrap();
+                self.nr_dict = self.dict.as_array().unwrap().len();
+                self.inputs.clear();
+                self.index = 0;
+            }
 	    Key::Submit => {
                 if self.start_status == String::from("Start") {
                     self.start_status = String::from("Pause");
@@ -114,6 +146,18 @@ impl Component for Keyboard {
          html! {
              <>
                 <div id="buttons">
+                <select onchange=self.link.callback(| v:html::ChangeData | {
+                        match v {
+                            html::ChangeData::Select(ele) => {
+                                Key::SelectLevel(ele.value())
+                            }
+                            _ => {
+                                Key::SelectLevel("Unknown".to_string())
+                            }
+                        }
+                    } )>
+                        { for DICT_INDEX.iter().map(|b| html! { <option value=b>{ b }</option> }) }
+                    </select>
                     <button onclick=self.link.callback(|_| Key::Submit) style=self.start_style>
                         { &self.start_status }
                     </button>

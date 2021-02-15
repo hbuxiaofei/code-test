@@ -1,5 +1,5 @@
 // From https://www.syntaxsuccess.com/viewarticle/experimenting-with-rust-and-webassembly
-#![recursion_limit = "256"]
+#![recursion_limit = "512"]
 
 mod components;
 mod common;
