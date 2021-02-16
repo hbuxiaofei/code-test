@@ -6,11 +6,11 @@ use yew::services::interval::{IntervalService, IntervalTask};
 use yew::services::{ConsoleService, Task};
 use wasm_bindgen::{JsCast, prelude::Closure};
 
-use web_sys::{AudioBuffer, OfflineAudioContext};
+use web_sys::{AudioBuffer, AudioContext, AudioDestinationNode};
 
 use crate::common::msg::Msg;
 
-const SOURCE_SOUND: &[u8] = include_bytes!("../content/sound/dog.mp3");
+const SOURCE_SOUND: &[u8] = include_bytes!("../content/sound/click.mp3");
 
 pub struct Body {
     link: ComponentLink<Self>,
@@ -62,39 +62,32 @@ impl Component for Body {
                 let show_str = format!("> SOURCE_SOUND len is: {:?}", SOURCE_SOUND.len());
                 ConsoleService::info(&show_str);
 
-                let array_u8 = js_sys::Uint8Array::new_with_length(SOURCE_SOUND.len() as u32);
-                for i in 0..(SOURCE_SOUND.len()) {
-                    array_u8.fill(SOURCE_SOUND[i], i as u32, (i+1) as u32);
-                }
+                let array_u8: js_sys::Uint8Array = js_sys::Uint8Array::from(SOURCE_SOUND);
 
-                let array_buf = array_u8.buffer();
+                let array_buf: js_sys::ArrayBuffer = array_u8.buffer();
 
-                let audio_ctx =
-                    OfflineAudioContext::new_with_number_of_channels_and_length_and_sample_rate(
-                        1,
-                        SOURCE_SOUND.len() as u32,
-                        128000.0
-                    ).unwrap();
-
+                let audio_ctx = AudioContext::new().unwrap();
 
                 let song = audio_ctx.create_buffer_source().unwrap();
-                let handler = move | buf: AudioBuffer | {
+                let destination: AudioDestinationNode = audio_ctx.destination();
+
+                let handler = move |buf: AudioBuffer| {
                     let buffer: Option<&AudioBuffer> = Some(&buf);
 
                     song.set_buffer(buffer);
-                    // song.connect_with_audio_node(audio_ctx.destination().as_ref());
+                    song.connect_with_audio_node(destination.as_ref()).unwrap();
                     song.start().unwrap();
                 };
 
-                // let handle = Box::new(handler) as Box<dyn FnMut(_)>;
-                let handle = Box::new(handler) as Box<dyn FnMut(_)>;
+                let handle: Box<dyn FnMut(_) + 'static> = Box::new(handler) as Box<dyn FnMut(_)>;
 
                 let cb = Closure::wrap(handle);
 
-                // audio_ctx.decode_audio_data(&array_buf);
                 audio_ctx.decode_audio_data_with_success_callback(&array_buf,
                     cb.as_ref().unchecked_ref()).unwrap();
+
                 cb.forget();
+
                 true
             }
             Msg::UpdateTime => {
@@ -112,7 +105,7 @@ impl Component for Body {
         html! {
             <>
                 <div id="buttons">
-                    <button onclick=self.link.callback(|_| Msg::ButtonStart)>
+                    <button style="display:none" onclick=self.link.callback(|_| Msg::ButtonStart)>
                         { "Setting" }
                     </button>
                 </div>

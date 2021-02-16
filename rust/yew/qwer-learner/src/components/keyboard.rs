@@ -3,20 +3,25 @@ use std::collections::HashMap;
 use yew::{html, Bridge, Component, ComponentLink, Html, ShouldRender};
 use yew::services::{ConsoleService};
 use yew::agent::Bridged;
-use web_sys::{HtmlAudioElement};
+use web_sys::{HtmlAudioElement, AudioBuffer, AudioContext, AudioDestinationNode};
+use wasm_bindgen::{JsCast, prelude::Closure};
 
 use crate::common::msg::Key;
 use crate::common::event_bus::{EventBus};
 
 static AUDIO_URL: &str = "http://dict.youdao.com/dictvoice?type=0&audio=";
 
+const SOUND_CLICK: &[u8] = include_bytes!("../content/sound/click.wav");
+
 const DICT_PROGRAMMER: &str = include_str!("../content/dicts/it-words.json");
+const DICT_CET4: &str = include_str!("../content/dicts/CET4_T.json");
 const DICT_CET6: &str = include_str!("../content/dicts/CET6_T.json");
 const DICT_TOEFL: &str = include_str!("../content/dicts/TOEFL_T.json");
 
 lazy_static::lazy_static! {
     static ref DICT_INDEX: Vec<&'static str> = vec![
         "Programmer",
+        "CET4",
         "CET6",
         "TOEFL",
     ];
@@ -25,8 +30,9 @@ lazy_static::lazy_static! {
     {
         let mut map = HashMap::new();
         map.insert(DICT_INDEX[0].to_string(), DICT_PROGRAMMER);
-        map.insert(DICT_INDEX[1].to_string(), DICT_CET6);
-        map.insert(DICT_INDEX[2].to_string(), DICT_TOEFL);
+        map.insert(DICT_INDEX[1].to_string(), DICT_CET4);
+        map.insert(DICT_INDEX[2].to_string(), DICT_CET6);
+        map.insert(DICT_INDEX[3].to_string(), DICT_TOEFL);
         map
     };
 }
@@ -77,6 +83,32 @@ impl Component for Keyboard {
                 if self.start_status != String::from("Pause") || text.len() != 1 {
                     return true;
                 }
+
+                let array_u8: js_sys::Uint8Array = js_sys::Uint8Array::from(SOUND_CLICK);
+
+                let array_buf: js_sys::ArrayBuffer = array_u8.buffer();
+
+                let audio_ctx = AudioContext::new().unwrap();
+
+                let song = audio_ctx.create_buffer_source().unwrap();
+                let destination: AudioDestinationNode = audio_ctx.destination();
+
+                let handler = move |buf: AudioBuffer| {
+                    let buffer: Option<&AudioBuffer> = Some(&buf);
+
+                    song.set_buffer(buffer);
+                    song.connect_with_audio_node(destination.as_ref()).unwrap();
+                    song.start().unwrap();
+                };
+
+                let handle: Box<dyn FnMut(_) + 'static> = Box::new(handler) as Box<dyn FnMut(_)>;
+
+                let cb = Closure::wrap(handle);
+
+                audio_ctx.decode_audio_data_with_success_callback(&array_buf,
+                    cb.as_ref().unchecked_ref()).unwrap();
+
+                cb.forget();
 
                 let b = text.as_bytes()[0];
                 let c: char = b as char;
