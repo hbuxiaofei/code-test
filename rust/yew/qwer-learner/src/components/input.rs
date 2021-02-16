@@ -28,6 +28,14 @@ impl Component for Input {
                 let msg = format!("> input level [{:?}].", level);
                 ConsoleService::info(&msg);
             }
+	    Key::SelectChapter(chaper) => {
+                let msg = format!("> input chaper: {}.", chaper);
+                ConsoleService::info(&msg);
+            }
+	    Key::WordNextPre(text) => {
+                let s = format!("> word {}.", text);
+                ConsoleService::info(s.as_str());
+            }
 	    Key::Submit => {
                 ConsoleService::info("> key [enter] pressed.");
 	    }
