@@ -35,9 +35,10 @@ pub struct Keyboard {
     start_status: String,
     start_style: String,
     dict: serde_json::Value,
-    nr_dict: usize,
-    index: usize,
-    chaper: usize,
+    nr_word: usize,
+    cur_index: usize,
+    cur_level: String,
+    cur_chaper: usize,
     inputs: String,
     _producer: Box<dyn Bridge<EventBus>>,
     link: ComponentLink<Self>,
@@ -48,18 +49,20 @@ impl Component for Keyboard {
     type Properties = ();
 
     fn create(_props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        let cur_level = DICT_INDEX[0].to_string();
         let dict: serde_json::Value =
-            serde_json::from_str(DICT_MAP[&DICT_INDEX[0].to_string()]).unwrap();
+            serde_json::from_str(DICT_MAP[&cur_level]).unwrap();
 
-        let nr_dict: usize = dict.as_array().unwrap().len();
-        let index = 0;
-        let chaper = index / 20 + 1;
+        let nr_word: usize = dict.as_array().unwrap().len();
+        let cur_index = 0;
+        let cur_chaper = cur_index / 20 + 1;
 
         Self {
             dict: dict,
-            nr_dict: nr_dict,
-            index: index,
-            chaper: chaper,
+            nr_word: nr_word,
+            cur_index: cur_index,
+            cur_level: cur_level,
+            cur_chaper: cur_chaper,
             inputs: String::with_capacity(100),
             start_status: String::from("Start"),
             start_style: String::from("background-color:#F5F5F5"),
@@ -79,17 +82,17 @@ impl Component for Keyboard {
                 let c: char = b as char;
                 self.inputs.push(c);
 
-                let word = self.dict[self.index]["name"].as_str().unwrap();
+                let word = self.dict[self.cur_index]["name"].as_str().unwrap();
 
                 let mut need_play = false;
                 if word.starts_with(&self.inputs) {
                     if word.len() == self.inputs.len() {
                         self.inputs.clear();
-                        self.index = self.index + 1;
-                        if self.index >= self.nr_dict {
-                            self.index = 0;
+                        self.cur_index = self.cur_index + 1;
+                        if self.cur_index >= self.nr_word {
+                            self.cur_index = 0;
                         }
-                        self.chaper = self.index / 20 + 1;
+                        self.cur_chaper = self.cur_index / 20 + 1;
                         need_play = true;
 
                     }
@@ -98,29 +101,30 @@ impl Component for Keyboard {
                 }
 
                 if need_play {
-                    let word = self.dict[self.index]["name"].as_str().unwrap();
+                    let word = self.dict[self.cur_index]["name"].as_str().unwrap();
                     let word_url = AUDIO_URL.to_string() + &word.to_string();
                     let audio = HtmlAudioElement::new_with_src(word_url.as_str()).unwrap();
                     audio.play().unwrap();
                 }
 
-                let word = self.dict[self.index]["name"].as_str().unwrap();
-                let msg = format!("> window key:{} for:{} inputs:{}, dict len:{}.",
-                    text, word, self.inputs, self.nr_dict);
+                let word = self.dict[self.cur_index]["name"].as_str().unwrap();
+		let msg = format!("> key:{} for:{} inputs:{}, level:{}, chaper:{}, words:{}.",
+		    text, word, self.inputs, self.cur_level, self.cur_chaper, self.nr_word);
                 ConsoleService::info(&msg);
 	    }
 	    Key::SelectLevel(level) => {
-                let msg = format!("> select level: {}.", level);
+                self.cur_level = level;
+                let msg = format!("> select level: {}.", self.cur_level);
                 ConsoleService::info(&msg);
 
-                self.dict = serde_json::from_str(DICT_MAP[&level]).unwrap();
-                self.nr_dict = self.dict.as_array().unwrap().len();
+                self.dict = serde_json::from_str(DICT_MAP[&self.cur_level]).unwrap();
+                self.nr_word = self.dict.as_array().unwrap().len();
                 self.inputs.clear();
-                self.index = 0;
-                self.chaper = self.index / 20 + 1;
+                self.cur_index = 0;
+                self.cur_chaper = self.cur_index / 20 + 1;
             }
 	    Key::SelectChapter(chaper) => {
-                self.index = (chaper - 1 ) * 20;
+                self.cur_index = (chaper - 1 ) * 20;
                 let msg = format!("> select chaper: {}.", chaper);
                 ConsoleService::info(&msg);
             }
@@ -130,30 +134,34 @@ impl Component for Keyboard {
                 }
                 self.inputs.clear();
                 if text == String::from("next") {
-                    self.index = self.index + 1;
-                    if self.index >= self.nr_dict {
-                        self.index = 0;
+                    self.cur_index = self.cur_index + 1;
+                    if self.cur_index >= self.nr_word {
+                        self.cur_index = 0;
                     }
                 } else {
-                    if self.index <= 0 {
-                        self.index = self.nr_dict - 1;
+                    if self.cur_index <= 0 {
+                        self.cur_index = self.nr_word - 1;
                     } else {
-                        self.index = self.index -1;
+                        self.cur_index = self.cur_index -1;
                     }
                 }
-                self.chaper = self.index / 20 + 1;
+                self.cur_chaper = self.cur_index / 20 + 1;
 
-                let word = self.dict[self.index]["name"].as_str().unwrap();
+                let word = self.dict[self.cur_index]["name"].as_str().unwrap();
                 let word_url = AUDIO_URL.to_string() + &word.to_string();
                 let audio = HtmlAudioElement::new_with_src(word_url.as_str()).unwrap();
                 audio.play().unwrap();
+
+                let msg = format!("> level:{}, chaper:{}, index:{}, words:{}.",
+                    self.cur_level, self.cur_chaper, self.cur_index, self.nr_word);
+                ConsoleService::info(&msg);
             }
 	    Key::Submit => {
                 if self.start_status == String::from("Start") {
                     self.start_status = String::from("Pause");
                     self.start_style = String::from("background-color:#008f53");
 
-                    let word = self.dict[self.index]["name"].as_str().unwrap();
+                    let word = self.dict[self.cur_index]["name"].as_str().unwrap();
                     let word_url = AUDIO_URL.to_string() + &word.to_string();
                     let audio = HtmlAudioElement::new_with_src(word_url.as_str()).unwrap();
                     audio.play().unwrap();
@@ -172,64 +180,72 @@ impl Component for Keyboard {
         false
     }
 
-     fn view(&self) -> Html {
-         let word = self.dict.get(self.index).unwrap();
-         let word_name: &str = word["name"].as_str().unwrap();
-         let word_trans: &str = word["trans"][0].as_str().unwrap();
-         let name_byte = word_name.as_bytes();
-         let inputs_byte = self.inputs.as_bytes();
-         let name_byte_last = &name_byte[inputs_byte.len()..name_byte.len()];
+    fn view(&self) -> Html {
+        let word = self.dict.get(self.cur_index).unwrap();
+        let word_name: &str = word["name"].as_str().unwrap();
+        let word_trans: &str = word["trans"][0].as_str().unwrap();
+        let name_byte = word_name.as_bytes();
+        let inputs_byte = self.inputs.as_bytes();
+        let name_byte_last = &name_byte[inputs_byte.len()..name_byte.len()];
 
-         let chapers: Vec<usize> = (1..(self.nr_dict / 20 + 1)).collect();
+        let chapers: Vec<usize> = (1..(self.nr_word / 20 + 1)).collect();
 
-         html! {
-             <>
-                <div id="buttons">
-                    <select onchange=self.link.callback(| v:html::ChangeData | {
-                            match v {
-                                html::ChangeData::Select(ele) => {
-                                    Key::SelectLevel(ele.value())
-                                }
-                                _ => {
-                                    Key::SelectLevel(DICT_INDEX[0].to_string())
-                                }
-                            }
-                        } )>
-                        { for DICT_INDEX.iter().map(|b| html! { <option value=b>{ b }</option> }) }
-                    </select>
-                    <select onchange=self.link.callback(| v:html::ChangeData | {
-                            match v {
-                                html::ChangeData::Select(chp) => {
-                                    Key::SelectChapter(chp.value().parse::<usize>().unwrap())
-                                }
-                                _ => {
-                                    Key::SelectChapter(1)
-                                }
-                            }
-                        } )>
-                        { for chapers.iter().map(|b| html! { <option value=b>{ format!("Charper {}", b) }</option> }) }
-                    </select>
-                    <button onclick=self.link.callback(|_| Key::Submit) style=self.start_style>
-                        { &self.start_status }
-                    </button>
+        html! {
+            <>
+               <div id="buttons">
+                   <select onchange=self.link.callback(| v:html::ChangeData | {
+                           match v {
+                               html::ChangeData::Select(ele) => {
+                                   Key::SelectLevel(ele.value())
+                               }
+                               _ => {
+                                   Key::SelectLevel(DICT_INDEX[0].to_string())
+                               }
+                           }
+                       } )>
+                       { for DICT_INDEX.iter().map(|b| html! { <option value=b>{ b }</option> }) }
+                   </select>
+                   <select onchange=self.link.callback(| v:html::ChangeData | {
+                           match v {
+                               html::ChangeData::Select(chp) => {
+                                   Key::SelectChapter(chp.value().parse::<usize>().unwrap())
+                               }
+                               _ => {
+                                   Key::SelectChapter(1)
+                               }
+                           }
+                       } )>
+                       {
+                           for chapers.iter().map(|b| {
+                               if *b == self.cur_chaper {
+                                   html! { <option value=b selected=true>{ format!("Charper {}", b) }</option> }
+                               } else {
+                                   html! { <option value=b>{ format!("Charper {}", b) }</option> }
+                               }
+                           })
+                       }
+                   </select>
+                   <button onclick=self.link.callback(|_| Key::Submit) style=self.start_style>
+                       { &self.start_status }
+                   </button>
+               </div>
+                <div id="word">
+                   { for inputs_byte.iter().map(|b| html! { <font color="red">{ *b as char }</font> }) }
+                   { for name_byte_last.iter().map(|b| html! { <font color="white">{ *b as char }</font> }) }
                 </div>
-                 <div id="word">
-                    { for inputs_byte.iter().map(|b| html! { <font color="red">{ *b as char }</font> }) }
-                    { for name_byte_last.iter().map(|b| html! { <font color="white">{ *b as char }</font> }) }
-                 </div>
-                 <div id="trans">
-                    <p> { &word_trans } </p>
-                 </div>
-                 <div>
-                    <button style="float:left;" onclick=self.link.callback(|_| Key::WordNextPre(String::from("prev")))>
-                        { "Prev" }
-                    </button>
-                    <button style="float:right;" onclick=self.link.callback(|_| Key::WordNextPre(String::from("next")))>
-                        { "Next" }
-                    </button>
-                 </div>
-             </>
-         }
-     }
+                <div id="trans">
+                   <p> { &word_trans } </p>
+                </div>
+                <div>
+                   <button style="float:left;" onclick=self.link.callback(|_| Key::WordNextPre(String::from("prev")))>
+                       { "Prev" }
+                   </button>
+                   <button style="float:right;" onclick=self.link.callback(|_| Key::WordNextPre(String::from("next")))>
+                       { "Next" }
+                   </button>
+                </div>
+            </>
+        }
+    }
 }
 
