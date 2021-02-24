@@ -6,3 +6,6 @@ all:
 
 clean:
 	rm -f expand.rs
+
+dist-clean: clean
+	rm -rf target Cargo.lock
