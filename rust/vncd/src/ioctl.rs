@@ -14,6 +14,24 @@ pub fn open(path: *const c_char, oflag: c_int) -> c_int {
     }
 }
 
+pub fn read(fd: c_int, buf: *mut c_void, count: usize) -> isize {
+	unsafe {
+        libc::read(fd, buf, count)
+	}
+}
+
+pub fn write(fd: c_int, buf: *const c_void, count: usize) -> isize {
+	unsafe {
+        libc::write(fd, buf, count)
+	}
+}
+
+pub fn lseek(fd: c_int, offset: i64, whence: c_int) -> i64 {
+	unsafe {
+        libc::lseek(fd, offset, whence)
+	}
+}
+
 pub fn close(fd: c_int) -> c_int {
     unsafe {
         libc::close(fd)

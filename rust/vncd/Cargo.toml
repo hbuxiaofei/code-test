@@ -7,8 +7,10 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-vncserver = "0.2"
 libc = "0.2"
+
+[dependencies.vncserver]
+path = "/home/libvnc-rs/vncserver"
 
 [build-dependencies]
 bindgen = "0.58"

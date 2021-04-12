@@ -11,6 +11,7 @@ fn bindgen_fb() {
         .allowlist_type("fb_fix_screeninfo")
         .allowlist_var("FBIOGET_VSCREENINFO")
         .allowlist_var("FBIOGET_FSCREENINFO")
+        .derive_default(true)
         .generate()
         .expect("unable to generate fb bindings");
 
