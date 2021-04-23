@@ -1,0 +1,98 @@
+#!/usr/bin/env bash
+
+cd $(dirname $0)
+
+INPUT_ARGS=$@
+INPUT_NR=$#
+INPUT_ARG1=$1
+
+declare -A SUB_CMDS
+SUB_CMDS=(
+[self]="do_self"
+[git]="do_git"
+[gdb]="do_gdb"
+[dd]="do_dd"
+)
+
+function do_all()
+{
+    cat << EOF
+self    Self command.
+git     Git is a stupid content tracker.
+gdb     The GNU Debugger.
+dd      Copy a file, converting and formatting according to the operands.
+EOF
+}
+
+function do_self()
+{
+    cat << EOF
+install     Install the helper tools.
+EOF
+}
+
+function do_git()
+{
+    cat << EOF
+git config --global user.email "<email>"
+EOF
+}
+
+function do_gdb()
+{
+    cat << EOF
+gdb attach <pid>  // deatch
+EOF
+}
+
+function do_dd()
+{
+    cat << EOF
+dd if=/dev/zero of=out.disk bs=1K count=10 oflag=direct
+EOF
+}
+
+function echo_info()
+{
+    echo "[Info] $@"
+}
+
+function echo_warn()
+{
+    echo "[Warn] $@"
+}
+
+function echo_err()
+{
+    echo "[Err] $@"
+}
+
+function check_sub_cmd()
+{
+    local sub_cmd=$1
+    local _key=""
+    for _key in ${!SUB_CMDS[@]}; do
+        if [ x"$_key" == x"$sub_cmd" ]; then
+            return 0
+        fi
+    done
+    echo_err "error: unknown command: '$sub_cmd'"
+    exit 1
+}
+
+function main()
+{
+    if [ $INPUT_NR -eq 0 ]; then
+        do_all $INPUT_ARGS
+        exit 0
+    fi
+
+    # check sub command
+    check_sub_cmd $INPUT_ARGS
+
+    ${SUB_CMDS[$INPUT_ARG1]}
+}
+
+main $@
+
+exit $?
