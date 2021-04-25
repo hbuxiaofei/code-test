@@ -40,6 +40,24 @@ SUB_CMDS=(
 [kubectl]="do_kubectl"
 )
 
+function create_bash_completion()
+{
+    local completion_dir="/usr/share/bash-completion/completions"
+    local completion_file=${completion_dir}/${EXEC_NAME}
+    local _key=""
+
+    [ ! -d $completion_dir ] && mkdir -p $completion_dir
+    echo "complete_list=\"\"" > $completion_file
+
+    for _key in ${!SUB_CMDS[@]}; do
+        if [ -n "$_key" ]; then
+            echo "complete_list=\"\$complete_list $_key\"" >> $completion_file
+        fi
+    done
+    echo "complete -W \"\$complete_list\" ${EXEC_NAME}" >> $completion_file
+    echo "complete -W \"\$complete_list\" ${ALIAS_NAME}" >> $completion_file
+}
+
 function do_all()
 {
     cat << EOF
@@ -105,7 +123,8 @@ EOF
         [ ! -d ${exec_path} ] && mkdir -p ${exec_path}
         cp -f ${EXEC_NAME} ${exec_path}/
         chmod +x ${exec_path}/${EXEC_NAME}
-        ln -s ${exec_path}/${EXEC_NAME} ${exec_path}/${ALIAS_NAME}
+        ln -sf ${exec_path}/${EXEC_NAME} ${exec_path}/${ALIAS_NAME}
+        create_bash_completion
     else
         echo_err "error: unknown sub command: '$input_arg2'"
         exit 1
