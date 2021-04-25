@@ -6,49 +6,70 @@ INPUT_ARGS=$@
 INPUT_NR=$#
 INPUT_ARG1=$1
 
+EXEC_NAME="helper"
+ALIAS_NAME="hr"
+
 declare -A SUB_CMDS
 SUB_CMDS=(
 [self]="do_self"
+[golang]="do_golang"
+[diff]="do_diff"
+[screen]="do_screen"
+[yum]="do_yum"
+[mysql]="do_mysql"
 [git]="do_git"
+[make]="do_make"
+[blkid]="do_blkid"
+[iostat]="do_iostat"
+[fio]="do_fio"
 [gdb]="do_gdb"
+[pkg-config]="do_pkg_config"
 [dd]="do_dd"
+[strace]="do_strace"
+[perf]="do_perf"
+[ip]="do_ip"
+[tcpdump]="do_tcpdump"
+[grub2-mkconfig]="do_grub2_mkconfig"
+[sshpass]="do_sshpass"
+[stap]="do_stap"
+[dbus-monitor]="do_dbus_monitor"
+[guestfish]="do_guestfish"
+[qemu-nbd]="do_qemu_nbd"
+[iscsiadm]="do_iscsiadm"
+[ovs-vsctl]="do_ovs_vsctl"
+[kubectl]="do_kubectl"
 )
 
 function do_all()
 {
     cat << EOF
-self    Self command.
-git     Git is a stupid content tracker.
-gdb     The GNU Debugger.
-dd      Copy a file, converting and formatting according to the operands.
-EOF
-}
-
-function do_self()
-{
-    cat << EOF
-install     Install the helper tools.
-EOF
-}
-
-function do_git()
-{
-    cat << EOF
-git config --global user.email "<email>"
-EOF
-}
-
-function do_gdb()
-{
-    cat << EOF
-gdb attach <pid>  // deatch
-EOF
-}
-
-function do_dd()
-{
-    cat << EOF
-dd if=/dev/zero of=out.disk bs=1K count=10 oflag=direct
+self           Self command.
+golang         Go is a tool for managing Go source code.
+diff           Compare files line by line.
+screen         Screen manager with VT100/ANSI terminal emulation.
+yum            Redirecting to DNF Command Reference.
+mysql          The MySQL command-line tool.
+git            Git is a stupid content tracker.
+make           GNU make utility to maintain groups of programs
+gdb            The GNU Debugger.
+pkg-config     A system for configuring build dependency information.
+blkid          Locate/Print block device attributes.
+iostat         Report CPU statistics and input/output statistics for devices and partitions.
+fio            Flexible I/O tester.
+dd             Copy a file, converting and formatting according to the operands.
+strace         Trace system calls and signals.
+perf           Performance analysis tools for Linux.
+ip             Show / Manipulate routing, network devices, interfaces and tunnels.
+tcpdump        Dump traffic on a network.
+grub-mkconfig  Generate a GRUB configuration file.
+sshpass        Noninteractive ssh password provider.
+stap           Systemtap script translator/driver.
+dbus-monitor   Debug probe to print message bus messages
+guestfish      The guest filesystem shell.
+qemu-nbd       QEMU Disk Network Block Device Server.
+iscsiadm       Open-iscsi administration utility.
+ovs-vsctl      Utility for querying and configuring ovs-vswitchd.
+kubectl        Kubectl controls the Kubernetes cluster manager.
 EOF
 }
 
@@ -65,6 +86,456 @@ function echo_warn()
 function echo_err()
 {
     echo "[Err] $@"
+}
+
+function do_self()
+{
+    local input_nr=$#
+    local input_arg2=$2
+    local exec_path="/usr/local/bin"
+
+    if [ $input_nr -eq 1 ]; then
+        cat << EOF
+install     Install the helper tools.
+EOF
+        exit 0
+    fi
+
+    if [ x"$input_arg2" == x"install" ]; then
+        [ ! -d ${exec_path} ] && mkdir -p ${exec_path}
+        cp -f ${EXEC_NAME} ${exec_path}/
+        chmod +x ${exec_path}/${EXEC_NAME}
+        ln -s ${exec_path}/${EXEC_NAME} ${exec_path}/${ALIAS_NAME}
+    else
+        echo_err "error: unknown sub command: '$input_arg2'"
+        exit 1
+    fi
+}
+
+function do_golang()
+{
+    cat << EOF
+# 单元测试
+go test -v -run <function>
+
+# dlv代码调试
+dlv --listen=:8181 --headless --log attach \$(pidof app.out)
+dlv connect <ip>:8181
+EOF
+}
+
+function do_diff()
+{
+    cat << EOF
+# -r: 递归; -q: 只输出哪些文件不同; -N: 比较目录时, 若文件A仅出现在某个目录中, 预设会显示
+diff -rqN
+EOF
+}
+
+function do_yum()
+{
+    cat << EOF
+yum clean all
+yum makecache
+yum install <package>
+yum provides ls
+
+# 只下载不安装, --urls显示包得url源
+yumdownload libguestfs --resolve --destdir=/home/libguestfs/
+
+yumdownload grep --resolve --installroot=/home/tmp \\
+    --destdir=/home/Packages --disablerepo="*" --enablerepo="develop"
+
+# 重新生成repo关系
+createrepo -g comps.xml .
+
+EOF
+}
+
+function do_screen()
+{
+    cat << EOF
+# 开启一个screen
+screen -S <name>
+
+# 列出所有screen
+screen -ls
+
+# 连接一个screen
+screen -r <name>
+EOF
+}
+
+function do_mysql()
+{
+    cat << EOF
+# 登陆mysql
+mysql -h <ip> -u <name> -p<password>
+mysql> show databases;
+mysql> use <database>;
+mysql> show tables;
+
+# 配置密码
+mysqladmin -u root password <password>
+EOF
+}
+
+function do_blkid()
+{
+    cat << EOF
+blkid /dev/vda1
+blkid -t LABEL='config-2' -o device
+blkid -t TYPE='ext4' -o device
+EOF
+}
+
+function do_make()
+{
+    cat << EOF
+# 驱动编译
+make -j <CPU_NR> -C /lib/modules/\$(uname -r)/build M=\$(pwd) modules
+EOF
+}
+
+function do_git()
+{
+    cat << EOF
+# 配置邮件地址
+git config --global user.email "xxx@xxx.com"
+
+# 配置用户名
+git config --global user.name "xxx"
+
+# 配置默认编辑器为vim
+git config --global core.editor vim
+
+# 配置git高亮显示
+git config --global color.ui auto
+
+# 修改最近一次提交commit message
+git commit --amend
+
+# 生成patch
+git format-patch -n <n> <id>
+git format-patch <id>..<id>
+
+# 打patch
+git am <xxx.patch>
+
+# 合并多个commit
+git rebase -i HEAD^^
+git rebase -i HEAD~2
+git rebase -i <id>~<n>
+
+# 挑拣提交, 将其他分支commit应用到当前分支
+git cherry-pick <id>
+
+# 定制查看Log日志
+git log --pretty=oneline
+git log --pretty=format:"%h-%an(%ae),%ai:%s"
+
+# 提交commit带signed-off-by
+git commit --singoff -am <message>
+
+# 远程提交代码
+git remote add gitlab git@gitlab:xxx/xxx
+git push gitlab master
+git push gitlab --mirror
+
+# 大文件lfs操作
+git lfs track "*.tar"
+git lfs ls-files
+git lfs clone
+
+# 查看文件修订记录
+git blame -L <line_from>,<line_to> <file>
+
+# git支持tab自动补全
+yum install bash-completion
+
+# git for zsh
+git confit --add oh-my-zsh.hide-status 1 // 隐藏
+git confit --add oh-my-zsh.hide-status 0 // 打开
+EOF
+}
+
+function do_pkg_config()
+{
+    cat << EOF
+pkg-config --libs libvncserver
+pkg-config --path libvncserver
+EOF
+}
+
+function do_gdb()
+{
+    cat << EOF
+gdb attach <pid>
+gdb --args app.out 123
+
+# 调试core dump
+gdb <program> <core dump file>  // gdb app.out core.11127
+
+gdb> b <file>:<line>    :设置断点
+gdb> b fn if a>b        :条件断点设置
+gdb> info b             :查看所有断点
+gdb> r                  :运行程序
+gdb> c                  :继续直到下个断点
+gdb> n                  :单步跟踪
+gdb> s                  :单步调试, 如果有函数则进入
+gdb> delete <n>         :删除断点
+gdb> delete breakpoints :删除所有断点
+gdb> bt                 :查看调用栈
+gdb> list               :列出源代码, 简写为l
+gdb> p <var>            :打印变量
+
+[tips]
+cgdb     可以看作gdb得界面增强版, 用来替代gdb -tui
+EOF
+}
+
+function do_fio()
+{
+    cat << EOF
+#顺序读
+fio -filename=/dev/sda -direct=1 -iodepth 1 -thread -rw=read -ioengine=psync -bs=16k -size=200G \\
+	-numjobs=30 -runtime=1000 -group_reporting -name=mytest
+
+#顺序写
+fio -filename=/dev/sda -direct=1 -iodepth 1 -thread -rw=write -ioengine=psync -bs=16k -size=200G \\
+	-numjobs=30 -runtime=1000 -group_reporting -name=mytest
+
+#随机读
+fio -filename=/dev/sda -direct=1 -iodepth 1 -thread -rw=randread -ioengine=psync -bs=16k -size=200G \\
+	-numjobs=30 -runtime=1000 -group_reporting -name=mytest
+
+#随机写
+fio -filename=/dev/sda -direct=1 -iodepth 1 -thread -rw=randwrite -ioengine=psync -bs=16k -size=200G \\
+	-numjobs=30 -runtime=1000 -group_reporting -name=mytest
+
+#混合随机读写
+fio -filename=/dev/sda -direct=1 -iodepth 1 -thread -rw=randrw -rwmixread=70 -ioengine=psync -bs=16k -size=200G \\
+	-numjobs=30 -runtime=100 -group_reporting -name=mytest -ioscheduler=noop
+EOF
+}
+
+function do_iostat()
+{
+    cat << EOF
+# -x: 输出更详细信息; -k/-m: 指定输出单位; -d: 单独输出Device结果
+# 每隔1s 采样一次, 共2 次
+iostat -x -k -d 1 2  // hdparm测试磁盘速率: hdparm -t --direct /dev/sda1
+EOF
+}
+
+function do_dd()
+{
+    cat << EOF
+dd if=/dev/zero of=out.disk bs=1K count=10 oflag=direct
+EOF
+}
+
+function do_strace()
+{
+    cat << EOF
+strace -o output.txt -T -tt -e trace=all -p <pid>
+EOF
+}
+
+function do_tcpdump()
+{
+    cat << EOF
+tcpdump -i eth0
+tcpdump tcp and port <port>
+tcpdump -w xx.txt
+EOF
+}
+
+function do_ip()
+{
+    cat << EOF
+ip link set enp0s3 up
+ip link set enp0s3 down
+ip route show | column -t
+ip route add default via 192.168.150.123 dev enp0s3
+ip route add 10.15.150.0/24 via 192.168.150.123 dev enp0s3
+ip route del 10.15.150.0/24
+EOF
+}
+
+function do_perf()
+{
+    cat << EOF
+# 记录数据, -a: all cpus; -g: Enables call-graph recording
+perf record -a -g -p <pid> sleep <seconds>
+
+# 加载数据
+perf report
+
+# 查看调用栈
+perf report -n --header --stdio
+EOF
+}
+
+function do_grub2_mkconfig()
+{
+    cat << EOF
+# 重新生成grub, 会自动识别是bios还是uefi
+grub2-mkconfig
+
+[tips]
+# grub参数 /etc/default/grub: GRUB_CMDLINE_LINUX
+## 禁用所有可选的CPU漏洞缓解措施
+## /sys/devices/system/cpu/vulnerabilities
+mitigations=off
+
+## 时钟源强制使用tsc
+## /sys/devices/system/clocksource/clocksource0/available_clocksource(current_clocksource)
+clocksource=tsc
+tsc=reliable
+
+EOF
+}
+
+function do_sshpass()
+{
+    cat << EOF
+sshpass -p <passwd> scp -r -o StrictHostKeyChecking=no root@<ip>:/home/path.txt ./
+EOF
+}
+
+function do_stap()
+{
+    cat << EOF
+stap -l 'kernel.function("*")'
+stap -l 'modules("xfs").function("*")'
+stap -l 'process("/lib64/libc.so.6").function("*")'
+
+stap -L "syscall.*"
+
+# 内核systemtap配置
+ln -s /lib/modules /usr/lib/debug/modules
+bunzip2 -k /boot/vmlinux-\$(uname -r).bz2
+ln -s /boot/vmlinux-\$(uname -r) /lib/modules/\$(uname -r)/vmlinx
+
+# 内核编译生成debuginfo
+## 驱动生成debuginfo
+objcopy --only-keep-debug xfs.ko xfs.ko-debug
+## 修改scripts/package/mkspec脚本, 生成kernel debuginfo
+%define debug_package %{nil}  =>  %define debug_package 1%
+## 编译rpm生成debuginfo
+%pre
+%setup -q
+%debug_package
+EOF
+}
+
+function do_dbus_monitor()
+{
+    cat << EOF
+dbus-monitor --system interface=com.dbus.service
+EOF
+}
+
+function do_qemu_nbd()
+{
+    cat << EOF
+modprobe nbd max_part=8
+qemu-img create -f qcow2 cluster_size=512 test.qcow2 10M
+qemu-nbd -c /dev/nbd0 test.qcow2
+
+mkfs.ext4 /dev/nbd0
+mkdir 111
+mount /dev/nbd0 111
+
+umount 111
+qemu-nbd --disconnect /dev/nbd0
+hexdump test.qcow2 -C
+EOF
+}
+
+function do_guestfish()
+{
+    cat << EOF
+export LIBGUESTFS_BACKEND=direct guestfish --rw -a test.img
+<fs> run
+<fs> list-filesystems
+<fs> mount /dev/sda1 /
+<fs> touch xxx.txt
+<fs> edit xxx.txt
+<fs> chmod 0755 xxx.txt
+<fs> rm xxx.txt
+<fs> exit
+EOF
+}
+
+function do_iscsiadm()
+{
+    cat << EOF
+# 发现iSCSI存储
+iscsiadm -m discovery -t sendtargets -p <IP:port>
+
+# 删除iSCSI发现记录
+iscsiadm -m node -o delete -T TARGET -p IP:port
+
+# 登录iSCSI存储
+iscsiadm -m node -T TARGET -p IP:port -l
+
+# 登出iSCSI存储
+iscsiadm -m node -T TARGET -p IP:port -u
+
+# 列出
+iscsiadm -m node
+iscsiadm -m session
+
+lsblk                // 列出 block devices
+lsblk --inverse
+
+lspci                // 列出pci devices
+lspci -vv -s 00:06.0
+
+lsscsi               // 列出 iscsi devices
+
+udevadm info -q env -p /devices/platform/host25/session11/target25:0:0/25:0:0:1/block/sde
+udevadm info --query=all --name=sda | grep ID_SERIAL=
+
+EOF
+}
+
+function do_ovs_vsctl()
+{
+    cat << EOF
+ovs-vsctl show
+ovs-vsctl list-br
+ovs-vsctl list-ports vswitch0
+
+ovs-vsctl list qos
+ovs-vsctl list queue
+
+ovs-vsctl -- find Interface name="vnet0"
+ovs-vsctl -- find Bridge name="vswitch0"
+ovs-vsctl -- find Port name="vnet3"
+
+ovs-ofctl show vswitch0
+ovs-ofctl dump-flows vswitch0 // 查看流表
+
+ovs-appctl fdb/show vswitch1  // 查看MAC表
+ovs-appctl ofproto/trace vswitch1 dl_dst=fa:16:3e:5e:5f:7c
+
+ovsdb-client list-dbs
+ovsdb-client dump
+EOF
+}
+
+function do_kubectl()
+{
+    cat << EOF
+kubectl get pods -n <pod-name>
+kubectl logs -n <pod-name> -f <docker-name>
+kubectl describe pods -n <pod-name>
+
+kubectl exec -n <pod-name> -p <docker-name> -it bash
+EOF
 }
 
 function check_sub_cmd()
@@ -90,7 +561,7 @@ function main()
     # check sub command
     check_sub_cmd $INPUT_ARGS
 
-    ${SUB_CMDS[$INPUT_ARG1]}
+    ${SUB_CMDS[$INPUT_ARG1]} $INPUT_ARGS
 }
 
 main $@
