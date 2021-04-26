@@ -36,6 +36,8 @@ SUB_CMDS=(
 [sshpass]="do_sshpass"
 [stap]="do_stap"
 [dbus-monitor]="do_dbus_monitor"
+[virsh]="do_virsh"
+[qemu-system-x86_64]="do_qemu_system_x86_64"
 [guestfish]="do_guestfish"
 [qemu-nbd]="do_qemu_nbd"
 [qemu-img]="do_qemu_img"
@@ -74,37 +76,39 @@ EOF
 function do_all()
 {
     cat << EOF
-self           Self command.
-golang         Go is an open source programming language that makes it easy to build simple, reliable, and efficient software.
-python         Python is a programming language that lets you work quickly and integrate systems more effectively.
-diff           Compare files line by line.
-date           Print or set the system date and time.
-mktemp         Create a temporary file or directory.
-screen         Screen manager with VT100/ANSI terminal emulation.
-yum            Redirecting to DNF Command Reference.
-mysql          The MySQL command-line tool.
-git            Git is a stupid content tracker.
-make           GNU make utility to maintain groups of programs
-gdb            The GNU Debugger.
-pkg-config     A system for configuring build dependency information.
-blkid          Locate/Print block device attributes.
-iostat         Report CPU statistics and input/output statistics for devices and partitions.
-fio            Flexible I/O tester.
-dd             Copy a file, converting and formatting according to the operands.
-strace         Trace system calls and signals.
-perf           Performance analysis tools for Linux.
-ip             Show / Manipulate routing, network devices, interfaces and tunnels.
-tcpdump        Dump traffic on a network.
-grub-mkconfig  Generate a GRUB configuration file.
-sshpass        Noninteractive ssh password provider.
-stap           Systemtap script translator/driver.
-dbus-monitor   Debug probe to print message bus messages
-guestfish      The guest filesystem shell.
-qemu-nbd       QEMU Disk Network Block Device Server.
-qemu-img       QEMU disk image utility.
-iscsiadm       Open-iscsi administration utility.
-ovs-vsctl      Utility for querying and configuring ovs-vswitchd.
-kubectl        Kubectl controls the Kubernetes cluster manager.
+self                Self command.
+golang              Go is an open source programming language that makes it easy to build simple, reliable, and efficient software.
+python              Python is a programming language that lets you work quickly and integrate systems more effectively.
+diff                Compare files line by line.
+date                Print or set the system date and time.
+mktemp              Create a temporary file or directory.
+screen              Screen manager with VT100/ANSI terminal emulation.
+yum                 Redirecting to DNF Command Reference.
+mysql               The MySQL command-line tool.
+git                 Git is a stupid content tracker.
+make                GNU make utility to maintain groups of programs.
+gdb                 The GNU Debugger.
+pkg-config          A system for configuring build dependency information.
+blkid               Locate/Print block device attributes.
+iostat              Report CPU statistics and input/output statistics for devices and partitions.
+fio                 Flexible I/O tester.
+dd                  Copy a file, converting and formatting according to the operands.
+strace              Trace system calls and signals.
+perf                Performance analysis tools for Linux.
+ip                  Show / Manipulate routing, network devices, interfaces and tunnels.
+tcpdump             Dump traffic on a network.
+grub-mkconfig       Generate a GRUB configuration file.
+sshpass             Noninteractive ssh password provider.
+stap                Systemtap script translator/driver.
+dbus-monitor        Debug probe to print message bus messages.
+virsh               The main interface for managing virsh guest domains.
+qemu-system-x86_64  The QEMU PC System emulator.
+guestfish           The guest filesystem shell.
+qemu-nbd            QEMU Disk Network Block Device Server.
+qemu-img            QEMU disk image utility.
+iscsiadm            Open-iscsi administration utility.
+ovs-vsctl           Utility for querying and configuring ovs-vswitchd.
+kubectl             Kubectl controls the Kubernetes cluster manager.
 EOF
 }
 
@@ -533,6 +537,25 @@ function do_dbus_monitor()
 {
     cat << EOF
 dbus-monitor --system interface=com.dbus.service
+EOF
+}
+
+function do_virsh()
+{
+    cat << EOF
+virsh qemu-monitor-command <domain> --hmp ?
+virsh qemu-monitor-command <domain> --hmp info
+virsh qemu-monitor-command <domain> --pretty '{"execute":"query-block"}'
+
+virsh qemu-agent-command <domain> '{"execute":"guest-info"}'
+EOF
+}
+
+function do_qemu_system_x86_64()
+{
+    cat << EOF
+qemu-system-x86_64 -machine help
+qemu-system-x86_64 -machine virt -cpu help
 EOF
 }
 
