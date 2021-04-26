@@ -13,6 +13,7 @@ declare -A SUB_CMDS
 SUB_CMDS=(
 [self]="do_self"
 [golang]="do_golang"
+[python]="do_python"
 [diff]="do_diff"
 [screen]="do_screen"
 [yum]="do_yum"
@@ -62,7 +63,8 @@ function do_all()
 {
     cat << EOF
 self           Self command.
-golang         Go is a tool for managing Go source code.
+golang         Go is an open source programming language that makes it easy to build simple, reliable, and efficient software.
+python         Python is a programming language that lets you work quickly and integrate systems more effectively.
 diff           Compare files line by line.
 screen         Screen manager with VT100/ANSI terminal emulation.
 yum            Redirecting to DNF Command Reference.
@@ -140,6 +142,15 @@ go test -v -run <function>
 # dlv代码调试
 dlv --listen=:8181 --headless --log attach \$(pidof app.out)
 dlv connect <ip>:8181
+EOF
+}
+
+function do_python()
+{
+    cat << EOF
+# 开启自带http服务
+nohup python3 -m http.server 8001
+python3 -m http.server &
 EOF
 }
 
