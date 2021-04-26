@@ -15,6 +15,8 @@ SUB_CMDS=(
 [golang]="do_golang"
 [python]="do_python"
 [diff]="do_diff"
+[date]="do_date"
+[mktemp]="do_mktemp"
 [screen]="do_screen"
 [yum]="do_yum"
 [mysql]="do_mysql"
@@ -66,6 +68,8 @@ self           Self command.
 golang         Go is an open source programming language that makes it easy to build simple, reliable, and efficient software.
 python         Python is a programming language that lets you work quickly and integrate systems more effectively.
 diff           Compare files line by line.
+date           Print or set the system date and time.
+mktemp         Create a temporary file or directory.
 screen         Screen manager with VT100/ANSI terminal emulation.
 yum            Redirecting to DNF Command Reference.
 mysql          The MySQL command-line tool.
@@ -159,6 +163,32 @@ function do_diff()
     cat << EOF
 # -r: 递归; -q: 只输出哪些文件不同; -N: 比较目录时, 若文件A仅出现在某个目录中, 预设会显示
 diff -rqN
+EOF
+}
+
+function do_date()
+{
+    cat << EOF
+date +%F
+date -d "-1 day" +%F
+date +"%Y-%m-%d %H:%M:%S"
+EOF
+}
+
+function do_mktemp()
+{
+    cat << EOF
+# 创建临时文件
+mktemp
+
+# 创建临时目录(-d)
+mktemp -d
+
+# 仅返回一个临时名子(-u), 并不真正创建文件:
+mktemp -u
+
+# 指定创建临时文件的模板, 后面的X要求至少有3位
+mktemp tmp.XXXXXXX
 EOF
 }
 
