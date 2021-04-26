@@ -286,6 +286,34 @@ yum install bash-completion
 # git for zsh
 git confit --add oh-my-zsh.hide-status 1 // 隐藏
 git confit --add oh-my-zsh.hide-status 0 // 打开
+
+# Commit message 和 Change log 编写
+feat      :新功能(feature)
+fix       :修补bug
+docs      :文档(documentation)
+style     :格式(不影响代码运行的变动)
+perf      :提升性能
+chore     :构建过程或辅助工具的变动
+refactor  :重构(即不是新增功能, 也不是修改bug的代码变动)
+ci        :CI相关
+test      :增加测试
+
+revert    :撤销以前的commit
+revert: feat(pencil): add 'graphiteWidth' option
+// 空一行
+This reverts commit 667ecc1654a317a13331b17617d973392f415f02
+
+e.g.
+feat(explanatory text): wrap detailed explanatory text to about 72 characters
+or so if necessary (第一个字母小写, 动词开头, 结尾不加句号)
+// 空一行
+Further paragraphs come after blank lines
+// 空一行
+- Bullet points are okay, too
+- Use a hanging indent
+// 空一行
+Closes #123
+
 EOF
 }
 
