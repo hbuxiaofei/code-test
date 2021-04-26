@@ -38,6 +38,7 @@ SUB_CMDS=(
 [dbus-monitor]="do_dbus_monitor"
 [guestfish]="do_guestfish"
 [qemu-nbd]="do_qemu_nbd"
+[qemu-img]="do_qemu_img"
 [iscsiadm]="do_iscsiadm"
 [ovs-vsctl]="do_ovs_vsctl"
 [kubectl]="do_kubectl"
@@ -91,6 +92,7 @@ stap           Systemtap script translator/driver.
 dbus-monitor   Debug probe to print message bus messages
 guestfish      The guest filesystem shell.
 qemu-nbd       QEMU Disk Network Block Device Server.
+qemu-img       QEMU disk image utility.
 iscsiadm       Open-iscsi administration utility.
 ovs-vsctl      Utility for querying and configuring ovs-vswitchd.
 kubectl        Kubectl controls the Kubernetes cluster manager.
@@ -539,6 +541,13 @@ mount /dev/nbd0 111
 umount 111
 qemu-nbd --disconnect /dev/nbd0
 hexdump test.qcow2 -C
+EOF
+}
+
+function do_qemu_img()
+{
+    cat << EOF
+qemu-img convert -f raw input.img -O qcow2 output.qcow2
 EOF
 }
 
