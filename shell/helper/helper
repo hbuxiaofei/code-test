@@ -543,8 +543,9 @@ EOF
 function do_virsh()
 {
     cat << EOF
-virsh qemu-monitor-command <domain> --hmp ?
+virsh qemu-monitor-command <domain> --hmp help
 virsh qemu-monitor-command <domain> --hmp info
+virsh qemu-monitor-command <domain> --pretty '{"execute":"query-commands"}'
 virsh qemu-monitor-command <domain> --pretty '{"execute":"query-block"}'
 
 virsh qemu-agent-command <domain> '{"execute":"guest-info"}'
