@@ -96,8 +96,31 @@ function create_bash_completion()
             echo "complete_list=\"\$complete_list $_key\"" >> $completion_file
         fi
     done
-    echo "complete -W \"\$complete_list\" ${EXEC_NAME}" >> $completion_file
-    echo "complete -W \"\$complete_list\" ${ALIAS_NAME}" >> $completion_file
+
+    # echo "complete -W \"\$complete_list\" ${EXEC_NAME}" >> $completion_file
+    # echo "complete -W \"\$complete_list\" ${ALIAS_NAME}" >> $completion_file
+
+cat >> $completion_file << EOF
+
+# START completion
+# Usage: Put "source bash_completion_helper.sh" into your .bashrc
+_helper()
+{
+    local cur
+    COMPREPLY=()
+    cur="\${COMP_WORDS[COMP_CWORD]}"
+
+    COMPREPLY=(\$(compgen -W "\${complete_list}" -- \${cur}))
+    return 0
+}
+
+complete -F _helper $ALIAS_NAME $EXEC_NAME
+
+# END completion
+
+EOF
+
+
 }
 
 function info_self()
