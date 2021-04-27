@@ -9,41 +9,77 @@ INPUT_ARG1=$1
 EXEC_NAME="helper"
 ALIAS_NAME="hr"
 
-declare -A SUB_CMDS
-SUB_CMDS=(
-[self]="do_self"
-[golang]="do_golang"
-[python]="do_python"
-[diff]="do_diff"
-[date]="do_date"
-[mktemp]="do_mktemp"
-[screen]="do_screen"
-[yum]="do_yum"
-[mysql]="do_mysql"
-[git]="do_git"
-[make]="do_make"
-[blkid]="do_blkid"
-[iostat]="do_iostat"
-[fio]="do_fio"
-[gdb]="do_gdb"
-[pkg-config]="do_pkg_config"
-[dd]="do_dd"
-[strace]="do_strace"
-[perf]="do_perf"
-[ip]="do_ip"
-[tcpdump]="do_tcpdump"
-[grub2-mkconfig]="do_grub2_mkconfig"
-[sshpass]="do_sshpass"
-[stap]="do_stap"
-[dbus-monitor]="do_dbus_monitor"
-[virsh]="do_virsh"
-[qemu-system-x86_64]="do_qemu_system_x86_64"
-[guestfish]="do_guestfish"
-[qemu-nbd]="do_qemu_nbd"
-[qemu-img]="do_qemu_img"
-[iscsiadm]="do_iscsiadm"
-[ovs-vsctl]="do_ovs_vsctl"
-[kubectl]="do_kubectl"
+CMD_KEYS=(
+self
+golang
+python
+diff
+date
+mktemp
+screen
+yum
+mysql
+git
+make
+gdb
+pkg-config
+blkid
+iostat
+fio
+dd
+strace
+perf
+ip
+tcpdump
+grub2-mkconfig
+sshpass
+stap
+dbus-monitor
+virsh
+qemu-system-x86_64
+guestfish
+qemu-nbd
+qemu-img
+iscsiadm
+ovs-vsctl
+kubectl
+)
+
+declare -A CMD_MAP
+CMD_MAP=(
+[self]="              info_self                do_self"
+[golang]="            info_golang              do_golang"
+[python]="            info_python              do_python"
+[diff]="              info_diff                do_diff"
+[date]="              info_date                do_date"
+[mktemp]="            info_mktemp              do_mktemp"
+[screen]="            info_screen              do_screen"
+[yum]="               info_yum                 do_yum"
+[mysql]="             info_mysql               do_mysql"
+[git]="               info_git                 do_git"
+[make]="              info_make                do_make"
+[blkid]="             info_blkid               do_blkid"
+[iostat]="            info_iostat              do_iostat"
+[fio]="               info_fio                 do_fio"
+[gdb]="               info_gdb                 do_gdb"
+[pkg-config]="        info_pkg_config          do_pkg_config"
+[dd]="                info_dd                  do_dd"
+[strace]="            info_strace              do_strace"
+[perf]="              info_perf                do_perf"
+[ip]="                info_ip                  do_ip"
+[tcpdump]="           info_tcpdump             do_tcpdump"
+[grub2-mkconfig]="    info_grub2_mkconfig      do_grub2_mkconfig"
+[sshpass]="           info_sshpass             do_sshpass"
+[stap]="              info_stap                do_stap"
+[dbus-monitor]="      info_dbus_monitor        do_dbus_monitor"
+[virsh]="             info_virsh               do_virsh"
+[qemu-system-x86_64]="info_qemu_system_x86_64  do_qemu_system_x86_64"
+[guestfish]="         info_guestfish           do_guestfish"
+[qemu-nbd]="          info_qemu_nbd            do_qemu_nbd"
+[qemu-img]="          info_qemu_img            do_qemu_img"
+[iscsiadm]="          info_iscsiadm            do_iscsiadm"
+[ovs-vsctl]="         info_ovs_vsctl           do_ovs_vsctl"
+[kubectl]="           info_kubectl             do_kubectl"
 )
 
 function create_bash_completion()
@@ -55,13 +91,244 @@ function create_bash_completion()
     [ ! -d $completion_dir ] && mkdir -p $completion_dir
     echo "complete_list=\"\"" > $completion_file
 
-    for _key in ${!SUB_CMDS[@]}; do
+    for _key in ${CMD_KEYS[@]}; do
         if [ -n "$_key" ]; then
             echo "complete_list=\"\$complete_list $_key\"" >> $completion_file
         fi
     done
     echo "complete -W \"\$complete_list\" ${EXEC_NAME}" >> $completion_file
     echo "complete -W \"\$complete_list\" ${ALIAS_NAME}" >> $completion_file
+}
+
+function info_self()
+{
+    cat << EOF
+Self command.
+EOF
+}
+
+function info_golang()
+{
+    cat << EOF
+Go is an open source programming language that makes it easy to build simple, reliable, and efficient software.
+EOF
+}
+
+function info_python()
+{
+    cat << EOF
+Python is a programming language that lets you work quickly and integrate systems more effectively.
+EOF
+}
+
+function info_diff()
+{
+    cat << EOF
+Compare files line by line.
+EOF
+}
+
+function info_date()
+{
+    cat << EOF
+Print or set the system date and time.
+EOF
+}
+
+function info_mktemp()
+{
+    cat << EOF
+Create a temporary file or directory.
+EOF
+}
+
+function info_screen()
+{
+    cat << EOF
+Screen manager with VT100/ANSI terminal emulation.
+EOF
+}
+
+function info_yum()
+{
+    cat << EOF
+Redirecting to DNF Command Reference.
+EOF
+}
+
+function info_mysql()
+{
+    cat << EOF
+The MySQL command-line tool.
+EOF
+}
+
+function info_git()
+{
+    cat << EOF
+Git is a stupid content tracker.
+EOF
+}
+
+function info_make()
+{
+    cat << EOF
+GNU make utility to maintain groups of programs.
+EOF
+}
+
+function info_gdb()
+{
+    cat << EOF
+The GNU Debugger.
+EOF
+}
+
+function info_pkg_config()
+{
+    cat << EOF
+A system for configuring build dependency information.
+EOF
+}
+
+function info_blkid()
+{
+    cat << EOF
+Locate/Print block device attributes.
+EOF
+}
+
+function info_iostat()
+{
+    cat << EOF
+Report CPU statistics and input/output statistics for devices and partitions.
+EOF
+}
+
+function info_fio()
+{
+    cat << EOF
+Flexible I/O tester.
+EOF
+}
+
+function info_dd()
+{
+    cat << EOF
+Copy a file, converting and formatting according to the operands.
+EOF
+}
+
+function info_strace()
+{
+    cat << EOF
+Trace system calls and signals.
+EOF
+}
+
+function info_perf()
+{
+    cat << EOF
+Performance analysis tools for Linux.
+EOF
+}
+
+function info_ip()
+{
+    cat << EOF
+Show / Manipulate routing, network devices, interfaces and tunnels.
+EOF
+}
+
+function info_tcpdump()
+{
+    cat << EOF
+Dump traffic on a network.
+EOF
+}
+
+function info_grub2_mkconfig()
+{
+    cat << EOF
+Generate a GRUB configuration file.
+EOF
+}
+
+function info_sshpass()
+{
+    cat << EOF
+Noninteractive ssh password provider.
+EOF
+}
+
+function info_stap()
+{
+    cat << EOF
+Systemtap script translator/driver.
+EOF
+}
+
+function info_dbus_monitor()
+{
+    cat << EOF
+Debug probe to print message bus messages.
+EOF
+}
+
+function info_virsh()
+{
+    cat << EOF
+The main interface for managing virsh guest domains.
+EOF
+}
+
+function info_qemu_system_x86_64()
+{
+    cat << EOF
+The QEMU PC System emulator.
+EOF
+}
+
+function info_guestfish()
+{
+    cat << EOF
+The guest filesystem shell.
+EOF
+}
+
+function info_qemu_nbd()
+{
+    cat << EOF
+QEMU Disk Network Block Device Server.
+EOF
+}
+
+function info_qemu_img()
+{
+    cat << EOF
+QEMU disk image utility.
+EOF
+}
+
+function info_iscsiadm()
+{
+    cat << EOF
+Open-iscsi administration utility.
+EOF
+}
+
+function info_ovs_vsctl()
+{
+    cat << EOF
+Utility for querying and configuring ovs-vswitchd.
+EOF
+}
+
+function info_kubectl()
+{
+    cat << EOF
+Kubectl controls the Kubernetes cluster manager.
+EOF
 }
 
 function do_help()
@@ -75,41 +342,14 @@ EOF
 
 function do_all()
 {
-    cat << EOF
-self                Self command.
-golang              Go is an open source programming language that makes it easy to build simple, reliable, and efficient software.
-python              Python is a programming language that lets you work quickly and integrate systems more effectively.
-diff                Compare files line by line.
-date                Print or set the system date and time.
-mktemp              Create a temporary file or directory.
-screen              Screen manager with VT100/ANSI terminal emulation.
-yum                 Redirecting to DNF Command Reference.
-mysql               The MySQL command-line tool.
-git                 Git is a stupid content tracker.
-make                GNU make utility to maintain groups of programs.
-gdb                 The GNU Debugger.
-pkg-config          A system for configuring build dependency information.
-blkid               Locate/Print block device attributes.
-iostat              Report CPU statistics and input/output statistics for devices and partitions.
-fio                 Flexible I/O tester.
-dd                  Copy a file, converting and formatting according to the operands.
-strace              Trace system calls and signals.
-perf                Performance analysis tools for Linux.
-ip                  Show / Manipulate routing, network devices, interfaces and tunnels.
-tcpdump             Dump traffic on a network.
-grub-mkconfig       Generate a GRUB configuration file.
-sshpass             Noninteractive ssh password provider.
-stap                Systemtap script translator/driver.
-dbus-monitor        Debug probe to print message bus messages.
-virsh               The main interface for managing virsh guest domains.
-qemu-system-x86_64  The QEMU PC System emulator.
-guestfish           The guest filesystem shell.
-qemu-nbd            QEMU Disk Network Block Device Server.
-qemu-img            QEMU disk image utility.
-iscsiadm            Open-iscsi administration utility.
-ovs-vsctl           Utility for querying and configuring ovs-vswitchd.
-kubectl             Kubectl controls the Kubernetes cluster manager.
-EOF
+    local _key=""
+    local _format_key=""
+    local key_tuple=()
+
+    for _key in ${CMD_KEYS[@]}; do
+        key_tuple=(${CMD_MAP[$_key]})
+        printf "\033[1m%-20s\033[0m %s\n" "$_key" "$(${key_tuple[0]})"
+    done
 }
 
 function echo_info()
@@ -672,7 +912,7 @@ function check_sub_cmd()
 {
     local sub_cmd=$1
     local _key=""
-    for _key in ${!SUB_CMDS[@]}; do
+    for _key in ${CMD_KEYS[@]}; do
         if [ x"$_key" == x"$sub_cmd" ]; then
             return 0
         fi
@@ -683,14 +923,16 @@ function check_sub_cmd()
 
 function main()
 {
+    local arg1="$1"
     local is_help=0
+    local key_tuple=()
 
     if [ $INPUT_NR -eq 0 ]; then
         do_all $INPUT_ARGS
         exit 0
     fi
 
-    case ${INPUT_ARG1} in
+    case ${arg1} in
         help) is_help=1
             ;;
         --help) is_help=1
@@ -709,7 +951,8 @@ function main()
     # check sub command
     check_sub_cmd $INPUT_ARGS
 
-    ${SUB_CMDS[$INPUT_ARG1]} $INPUT_ARGS
+    key_tuple=(${CMD_MAP[$arg1]})
+    ${key_tuple[1]} $INPUT_ARGS
 }
 
 main $@
