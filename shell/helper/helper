@@ -17,6 +17,7 @@ lsof
 netstat
 diff
 date
+nc
 mktemp
 screen
 yum
@@ -56,6 +57,7 @@ CMD_MAP=(
 [netstat]="           info_netstat             do_netstat"
 [diff]="              info_diff                do_diff"
 [date]="              info_date                do_date"
+[nc]="                info_nc                  do_nc"
 [mktemp]="            info_mktemp              do_mktemp"
 [screen]="            info_screen              do_screen"
 [yum]="               info_yum                 do_yum"
@@ -207,6 +209,13 @@ function info_date()
 {
     cat << EOF
 Print or set the system date and time.
+EOF
+}
+
+function info_nc()
+{
+    cat << EOF
+Concatenate and redirect sockets.
 EOF
 }
 
@@ -538,6 +547,23 @@ function do_date()
 date +%F
 date -d "-1 day" +%F
 date +"%Y-%m-%d %H:%M:%S"
+EOF
+}
+
+function do_nc()
+{
+    cat << EOF
+# 传输文件
+nc -l 1234 > test.tar
+nc 192.168.1.100 1234 < tes.tar
+
+# 传输目录
+nc -l 1234 | tar -xvf -
+tar -cvf - * | nc 192.168.1.100 1234
+
+# 扫描端口, 超时1s
+nc -vz -w 1 192.168.1.100 22
+
 EOF
 }
 
