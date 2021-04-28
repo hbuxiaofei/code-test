@@ -119,8 +119,42 @@ complete -F _helper $ALIAS_NAME $EXEC_NAME
 # END completion
 
 EOF
+}
 
+function create_zsh_completion()
+{
+    local completion_dir="$HOME/.zsh/completions"
+    local completion_file=${completion_dir}/_${EXEC_NAME}
+    local completion_alias_file=${completion_dir}/_${ALIAS_NAME}
+    [ ! -d ${completion_dir} ] && return 0
 
+    # header
+    cat > ${completion_file} << EOF
+#compdef ${EXEC_NAME} ${ALIAS_NAME}
+
+(( \$+functions[_helper_command] )) || _helper_command()
+{
+  local -a _helper_cmds
+  _helper_cmds=(
+EOF
+
+    # body
+    local _key=""
+    local key_tuple=()
+    for _key in ${CMD_KEYS[@]}; do
+        key_tuple=(${CMD_MAP[$_key]})
+        printf "    \"%s:%s\"\n" "$_key" "$(${key_tuple[0]})" >> ${completion_file}
+    done
+
+    # footer
+    cat >> ${completion_file} << EOF
+  )
+  if (( CURRENT == 1 )); then
+    _describe -t commands 'helper command' _helper_cmds || compadd "\$@"
+  fi
+}
+_arguments -s '*::helper command:_helper_command'
+EOF
 }
 
 function info_self()
@@ -366,7 +400,6 @@ EOF
 function do_all()
 {
     local _key=""
-    local _format_key=""
     local key_tuple=()
 
     for _key in ${CMD_KEYS[@]}; do
@@ -409,6 +442,7 @@ EOF
         chmod +x ${exec_path}/${EXEC_NAME}
         ln -sf ${exec_path}/${EXEC_NAME} ${exec_path}/${ALIAS_NAME}
         create_bash_completion
+        create_zsh_completion
     else
         echo_err "error: unknown sub command: '$input_arg2'"
         exit 1
