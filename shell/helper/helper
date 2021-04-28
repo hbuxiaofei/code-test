@@ -14,6 +14,7 @@ self
 golang
 python
 lsof
+netstat
 diff
 date
 mktemp
@@ -52,6 +53,7 @@ CMD_MAP=(
 [golang]="            info_golang              do_golang"
 [python]="            info_python              do_python"
 [lsof]="              info_lsof                do_lsof"
+[netstat]="           info_netstat             do_netstat"
 [diff]="              info_diff                do_diff"
 [date]="              info_date                do_date"
 [mktemp]="            info_mktemp              do_mktemp"
@@ -184,6 +186,13 @@ function info_lsof()
 {
     cat << EOF
 Lists on its standard output file information about files opened by processes.
+EOF
+}
+
+function info_netstat()
+{
+    cat << EOF
+Print network connections, routing tables, interface statistics, masquerade connections, and multicast memberships.
 EOF
 }
 
@@ -505,6 +514,13 @@ e.g.
 lsof -i :22
 lsof -i 4tcp@centos8-dev:1-10,smtp,22
 
+EOF
+}
+
+function do_netstat()
+{
+    cat << EOF
+netstat -anp
 EOF
 }
 
