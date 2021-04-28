@@ -13,6 +13,7 @@ CMD_KEYS=(
 self
 golang
 python
+lsof
 diff
 date
 mktemp
@@ -50,6 +51,7 @@ CMD_MAP=(
 [self]="              info_self                do_self"
 [golang]="            info_golang              do_golang"
 [python]="            info_python              do_python"
+[lsof]="              info_lsof                do_lsof"
 [diff]="              info_diff                do_diff"
 [date]="              info_date                do_date"
 [mktemp]="            info_mktemp              do_mktemp"
@@ -175,6 +177,13 @@ function info_python()
 {
     cat << EOF
 Python is a programming language that lets you work quickly and integrate systems more effectively.
+EOF
+}
+
+function info_lsof()
+{
+    cat << EOF
+Lists on its standard output file information about files opened by processes.
 EOF
 }
 
@@ -467,6 +476,35 @@ function do_python()
 # 开启自带http服务
 nohup python3 -m http.server 8001
 python3 -m http.server &
+EOF
+}
+
+function do_lsof()
+{
+    cat << EOF
+# 显示打开文件1.txt的进程
+lsof 1.txt
+
+# 显示目录下被进程打开的文件
+lsof +D /var/log
+
+# 显示指定命令打开的文件
+lsof -c tail
+
+# 列出进程打开的文件
+lsof -p <pid>
+
+lsof -i [46][protocol][@hostname|hostaddr][:service|port]
+    version  --> 4 or 6
+    protocol --> tcp or udp
+    hostname --> Internet host name
+    hostaddr --> IP地址
+    service  --> /etc/service中的 service name (可以不止一个)
+    port     --> 端口号 (可以不止一个)
+e.g.
+lsof -i :22
+lsof -i 4tcp@centos8-dev:1-10,smtp,22
+
 EOF
 }
 
