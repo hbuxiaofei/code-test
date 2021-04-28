@@ -1045,6 +1045,30 @@ kubectl exec -n <pod-name> -p <docker-name> -it bash
 EOF
 }
 
+function check_keys()
+{
+    local _key=""
+    local _key2=""
+
+    if [ ${#CMD_KEYS[@]} -ne ${#CMD_MAP[@]} ]; then
+        echo_err "error: cmd keys"
+        exit 1
+    fi
+
+    for _key in ${CMD_KEYS[@]}; do
+        for _key2 in ${!CMD_MAP[@]}; do
+            if [ x"$_key" == x"$_key2" ]; then
+                break
+            fi
+        done
+
+        if [ x"$_key" != x"$_key2" ]; then
+            echo_err "error: cmd key $_key"
+            exit 1
+        fi
+    done
+}
+
 function check_sub_cmd()
 {
     local sub_cmd=$1
@@ -1063,6 +1087,9 @@ function main()
     local arg1="$1"
     local is_help=0
     local key_tuple=()
+
+    # check keys
+    check_keys
 
     if [ $INPUT_NR -eq 0 ]; then
         do_all $INPUT_ARGS
