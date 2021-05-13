@@ -1230,8 +1230,8 @@ function lunar_parse_date()
 	fi
 	
 	if [ $ld -eq 15 ]; then
-		echo "$ly-$lm-$ld"
 		lunar_show_mythical_egg
+		echo -e "\t\t\tLunar Calendar: $ly.$lm.$ld\n"
 	fi
 }
 
