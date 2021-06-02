@@ -1039,11 +1039,12 @@ EOF
 function do_kubectl()
 {
     cat << EOF
-kubectl get pods -n <pod-name>
-kubectl logs -n <pod-name> -f <docker-name>
-kubectl describe pods -n <pod-name>
+kubectl get pods --all-namespaces
+kubectl get pods -n <namespace>
+kubectl logs -n <namespace> <pod> -f
+kubectl describe pods -n <namespace>
 
-kubectl exec -n <pod-name> -p <docker-name> -it bash
+kubectl exec -n <namespace> -p <pod> -it bash
 EOF
 }
 
