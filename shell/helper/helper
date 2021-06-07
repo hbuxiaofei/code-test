@@ -35,6 +35,7 @@ fio
 dd
 strace
 perf
+vmstat
 ip
 tcpdump
 grub2-mkconfig
@@ -75,6 +76,7 @@ CMD_MAP=(
 [dd]="                info_dd                  do_dd"
 [strace]="            info_strace              do_strace"
 [perf]="              info_perf                do_perf"
+[vmstat]="            info_vmstat              do_vmstat"
 [ip]="                info_ip                  do_ip"
 [tcpdump]="           info_tcpdump             do_tcpdump"
 [grub2-mkconfig]="    info_grub2_mkconfig      do_grub2_mkconfig"
@@ -317,6 +319,13 @@ function info_perf()
 {
     cat << EOF
 Performance analysis tools for Linux.
+EOF
+}
+
+function info_vmstat()
+{
+    cat << EOF
+Reports information about processes, memory, paging, block IO, traps, disks and cpu activity.
 EOF
 }
 
@@ -857,6 +866,14 @@ perf report
 
 # 查看调用栈
 perf report -n --header --stdio
+EOF
+}
+
+function do_vmstat()
+{
+    cat << EOF
+# 间隔1s打印
+vmstat 1 -wt
 EOF
 }
 
