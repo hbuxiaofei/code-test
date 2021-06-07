@@ -8,6 +8,7 @@ INPUT_ARG1=$1
 
 EXEC_NAME="helper"
 ALIAS_NAME="hr"
+RUN_DIR="/var/run/helper"
 
 LUNAR_START=2001
 
@@ -1137,7 +1138,7 @@ function lunar_get_leap_month()
 
 function lunar_get_days_of_month()
 {
-	local DOM=(0xd4a8 0xd4a0 0xda50 0x5aa8 0x56a0 0xaad8 0x25d0 0x92d0 0xc958 0xa950 
+	local DOM=(0xd4a8 0xd4a0 0xda50 0x5aa8 0x56a0 0xaad8 0x25d0 0x92d0 0xc958 0xa950
 	 	   0xb4a0 0xb550 0xb550 0x55a8 0x4ba0 0xa5b0 0x52b8 0x52b0 0xa930 0x74a8
 	 	   0x6aa0 0xad50 0x4da8 0x4b60 0x9570 0xa4e0 0xd260 0xe930 0xd530 0x5aa0
 	 	   0x6b50 0x96d0 0x4ae8 0x4ad0 0xa4d0 0xd258 0xd250 0xd520 0xdaa0 0xb5a0
@@ -1148,10 +1149,10 @@ function lunar_get_days_of_month()
 	local low=29
 
 	local sft=$(( 16 - $m ))
-	
+
 	local dom=${DOM[$(( $y - $LUNAR_START ))]}
 	local lmoy=$(lunar_get_leap_month $y)
-		
+
 	[ $m -gt $lmoy -a $lmoy -gt 0 ] && let "sft--"
 	[ $(( $dom & $(( 1 << $sft )) )) -gt 0 ] && let "low++"
 
@@ -1178,11 +1179,11 @@ function lunar_get_days_of_year()
 }
 
 function lunar_show_mythical_egg()
-{	
+{
 	cat << EOF
 Man-Month is Mythical.
-Silver Bullet is Mythical. 
-Perfect is Mythical. 
+Silver Bullet is Mythical.
+Perfect is Mythical.
 Mythical Designs are copies of Mythical Organizations.
 EOF
 }
@@ -1192,7 +1193,7 @@ function lunar_parse_date()
 	local d=${*:-$(date)}
 	local sft=$(( ( $(date -d "$d" +%s) - $(date -d "${LUNAR_START}/01/01" +%s) ) / 60 / 60 / 24 ))
 
-	local tmp=""	
+	local tmp=""
 	local ly=""
 	local lm=""
 	local ld=""
@@ -1229,14 +1230,38 @@ function lunar_parse_date()
 		done
 		let "ld+=$sft"
 	fi
-	
+
 	if [ $ld -eq 15 ]; then
 		lunar_show_mythical_egg
 		echo -e "\t\t\tLunar Calendar: $ly.$lm.$ld\n"
+		[ -d $RUN_DIR ] && rm -rf $RUN_DIR
 	fi
 }
 
-lunar_parse_date
+function is_run_once_today()
+{
+    local date_now=$(date +"%Y-%m-%d" 2>/dev/null)
+    local date_old=""
+    [ ! -d $RUN_DIR ] && mkdir -p $RUN_DIR
+
+    if [ ! -e ${RUN_DIR}/date ]; then
+        echo $date_now > ${RUN_DIR}/date
+        return 1
+    else
+        date_old=$(head -n1 ${RUN_DIR}/date 2>/dev/null)
+        if [ x"$date_now" != x"$date_old" ]; then
+            echo $date_now > ${RUN_DIR}/date
+            return 1
+        fi
+    fi
+
+    return 0
+}
+
+is_run_once_today
+if [ $? -ne 0 ]; then
+    lunar_parse_date
+fi
 
 main $@
 
