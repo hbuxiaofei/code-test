@@ -124,12 +124,10 @@ def get_container_name():
 
     array = first_line.strip().split("/")
 
-    if len(array) < 3:
-        sys.exit(1)
-
-    # 12:cpuset:/docker/9440dd89c4052167611e467efd47e1feccabaad448594cbc90eb7fb3f12f4c3f
-    if array[1] == "docker":
-        container_name = array[2][0:11]
+    if len(array) >= 3:
+        # 12:cpuset:/docker/9440dd89c4052167611e467efd47e1feccabaad448594cbc90eb7fb3f12f4c3f
+        if array[1] == "docker":
+            container_name = array[2][0:11]
 
     log_info("container name: %s" % container_name)
     return container_name
