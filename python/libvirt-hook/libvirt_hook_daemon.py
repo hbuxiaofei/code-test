@@ -21,13 +21,13 @@ LOG_FILE_PATH = "/var/log/libvirt-hook-daemon.log"
 
 # Start a unix socket server for debug.
 #
-# nc -Uv -lk /var/run/vm-agent/vm-agent.sock
+# nc -Uv -lk /var/run/node-agent/node-agent.sock
 #   -U, --unixsock             Use Unix domain sockets only
 #   -v, --verbose              Set verbosity level (can be used several times)
 #   -l, --listen               Bind and listen for incoming connections
 #   -k, --keep-open            Accept multiple connections in listen mode
 #
-SOCK_VM_AGENT = "/var/run/vm-agent/vm-agent.sock"
+SOCK_AGENT = "/var/run/node-agent/node-agent.sock"
 
 SOCK_LIBVIRTD = "/var/run/libvirt"
 
@@ -137,20 +137,20 @@ def get_container_name():
 
 
 def get_container_dir():
-    vmagent_dir = os.path.dirname(SOCK_VM_AGENT)
+    agent_dir = os.path.dirname(SOCK_AGENT)
     container_name = get_container_name()
 
     container_dir = ""
     if len(container_name):
-        # /var/run/vm-agent/000000000000/
-        container_dir = os.path.join(vmagent_dir, container_name)
+        # /var/run/node-agent/000000000000/
+        container_dir = os.path.join(agent_dir, container_name)
     return container_dir
 
 
 def unix_socket_send(message):
     try:
         sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        sock.connect(SOCK_VM_AGENT)
+        sock.connect(SOCK_AGENT)
         sock.sendall(message)
     except socket.error:
         log_err("socket send error: %s" % sys.stderr)
@@ -159,7 +159,7 @@ def unix_socket_send(message):
 
 
 def create_container_dir():
-    # /var/run/vm-agent/000000000000/
+    # /var/run/node-agent/000000000000/
     container_dir = get_container_dir()
     if len(container_dir):
         if not os.path.exists(container_dir):
@@ -174,7 +174,7 @@ def create_symlink_libvirt():
     src = SOCK_LIBVIRTD
     dst = ""
 
-    # /var/run/vm-agent/000000000000/var/run/libvirt
+    # /var/run/node-agent/000000000000/var/run/libvirt
     container_dir = get_container_dir()
     if len(container_dir) and os.path.exists(container_dir):
         dst = os.path.join(container_dir, "libvirt")
@@ -196,7 +196,7 @@ def create_symlink_libvirt():
 
 
 def remove_container_dir():
-    # /var/run/vm-agent/000000000000/
+    # /var/run/node-agent/000000000000/
     container_dir = get_container_dir()
     if len(container_dir):
         if os.path.exists(container_dir):
@@ -221,9 +221,9 @@ def run():
     if len(sys.argv) < 2:
         return
 
-    vmagent_dir = os.path.dirname(SOCK_VM_AGENT)
-    if not os.path.exists(vmagent_dir):
-        log_err("%s not exist" % vmagent_dir)
+    agent_dir = os.path.dirname(SOCK_AGENT)
+    if not os.path.exists(agent_dir):
+        log_err("%s not exist" % agent_dir)
         sys.exit(1)
 
     #  script_name = sys.argv[0]
