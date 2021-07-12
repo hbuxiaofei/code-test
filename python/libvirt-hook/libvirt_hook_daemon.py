@@ -52,10 +52,10 @@ class Message(object):
 class MessageEventLibvirt(Message):
     def __init__(self):
         # for python3
-        # super().__init__(MSG_TYPE_EVENT, MSG_SENDER_LIBVIRTD)
+        super().__init__(MSG_TYPE_EVENT, MSG_SENDER_LIBVIRTD)
 
         # for python2
-        super(MessageEventLibvirt, self).__init__(MSG_TYPE_EVENT, MSG_SENDER_LIBVIRTD)
+        # super(MessageEventLibvirt, self).__init__(MSG_TYPE_EVENT, MSG_SENDER_LIBVIRTD)
 
         self._container = None
 
@@ -110,24 +110,27 @@ def log_err(out, line_feed=True):
 def get_container_name():
     cgroup_file = "/proc/self/cgroup"
 
-    first_line = ""
     container_name = "0" * 12
     try:
         fd = open(cgroup_file, "r")
-        # read the first line only
-        first_line = fd.readline()
+
+        # 9:cpuset:/kubepods.slice/kubepods-burstable.slice/
+        #    kubepods-burstable-pod58764839_cf99_4c53_8936_01af3bf2b93e.slice/
+        #    docker-1ed3cb9db7df02ef112c8260110f12b5833f0542c8a138b2eea60271a4184ee0.scope
+        while True:
+            line = fd.readline()
+            if line:
+                log_info(line)
+                line_array = line.strip().split("docker-")
+                if len(line_array) < 2:
+                    continue
+                container_name = line_array[-1][:12]
+                break
+            else:
+                break
     finally:
         if fd:
             fd.close()
-
-    log_info(first_line)
-
-    array = first_line.strip().split("/")
-
-    if len(array) >= 3:
-        # 12:cpuset:/docker/9440dd89c4052167611e467efd47e1feccabaad448594cbc90eb7fb3f12f4c3f
-        if array[1] == "docker":
-            container_name = array[2][0:11]
 
     log_info("container name: %s" % container_name)
     return container_name
@@ -145,12 +148,8 @@ def get_container_dir():
 
 
 def unix_socket_send(message):
-    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    if sock < 0:
-        log_err("socket error: %s" % sys.stderr)
-        return False
-
     try:
+        sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         sock.connect(SOCK_VM_AGENT)
         sock.sendall(message)
     except socket.error:
@@ -184,7 +183,14 @@ def create_symlink_libvirt():
 
     try:
         log_info("symlink %s %s" % (src, dst))
-        os.symlink(src, dst)
+        if os.path.exists(dst):
+            if os.readlink(dst) != src:
+                shutil.rmtree(dst)
+                os.symlink(src, dst)
+            else:
+                log_info("symlink %s to %s already exist" % (src, dst))
+        else:
+            os.symlink(src, dst)
     except OSError as e:
         log_err("symlink %s %s, %s" % (src, dst, e))
 
