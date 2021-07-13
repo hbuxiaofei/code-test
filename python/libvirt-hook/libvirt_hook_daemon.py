@@ -57,17 +57,19 @@ class MessageEventLibvirt(Message):
         # for python2
         # super(MessageEventLibvirt, self).__init__(MSG_TYPE_EVENT, MSG_SENDER_LIBVIRTD)
 
-        self._container = None
+        self._containerid = None
+        self._hostname = socket.gethostname()
 
-    def set_container_name(self, container_name):
-        self._container = container_name
+    def set_container_id(self, container_id):
+        self._containerid = container_id
 
     def format_json(self):
         msg_dict = {}
         msg_dict["type"] = self._type
         msg_dict["sender"] = self._sender
         msg_dict["data"] = self._data
-        msg_dict["container"] = self._container
+        msg_dict["containerid"] = self._containerid
+        msg_dict["hostname"] = self._hostname
         return json.dumps(msg_dict)
 
 
@@ -107,10 +109,10 @@ def log_err(out, line_feed=True):
     log_out(msg_string)
 
 
-def get_container_name():
+def get_container_id():
     cgroup_file = "/proc/self/cgroup"
 
-    container_name = "0" * 12
+    container_id = "0" * 12
     try:
         fd = open(cgroup_file, "r")
 
@@ -124,7 +126,7 @@ def get_container_name():
                 line_array = line.strip().split("docker-")
                 if len(line_array) < 2:
                     continue
-                container_name = line_array[-1][:12]
+                container_id = line_array[-1][:12]
                 break
             else:
                 break
@@ -132,18 +134,18 @@ def get_container_name():
         if fd:
             fd.close()
 
-    log_info("container name: %s" % container_name)
-    return container_name
+    log_info("container id: %s" % container_id)
+    return container_id
 
 
 def get_container_dir():
     agent_dir = os.path.dirname(SOCK_AGENT)
-    container_name = get_container_name()
+    container_id = get_container_id()
 
     container_dir = ""
-    if len(container_name):
+    if len(container_id):
         # /var/run/node-agent/000000000000/
-        container_dir = os.path.join(agent_dir, container_name)
+        container_dir = os.path.join(agent_dir, container_id)
     return container_dir
 
 
@@ -210,7 +212,7 @@ def remove_container_dir():
 def notify_msg(action):
     msg = MessageEventLibvirt()
     msg.set_data("%s" % action)
-    msg.set_container_name("%s" % get_container_name())
+    msg.set_container_id("%s" % get_container_id())
     json_message = msg.format_json()
 
     log_info(json_message)
